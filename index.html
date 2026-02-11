@@ -15,10 +15,7 @@ body{
 
 h1,h2,h3{color:#a78bfa}
 
-.container{
-  padding:30px;
-  min-height:100vh;
-}
+.container{padding:30px;min-height:100vh;}
 
 .card{
   background:rgba(0,0,0,0.9);
@@ -29,9 +26,7 @@ h1,h2,h3{color:#a78bfa}
   animation:fadeIn 0.3s ease;
 }
 
-.full{
-  width:100%;
-}
+.full{width:100%;}
 
 @keyframes fadeIn{
   from{opacity:0; transform:translateY(10px)}
@@ -55,29 +50,18 @@ button{
   transition:0.2s;
 }
 
-button:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 15px #7c3aed;
-}
-
+button:hover{transform:scale(1.05);box-shadow:0 0 15px #7c3aed;}
 button:active{transform:scale(0.97)}
 
 .script-title{color:#60a5fa;font-size:20px;font-weight:bold}
 .maintenance{color:#ff4d4d;font-weight:bold}
 .hidden{display:none}
-
 .nav button{margin-right:10px}
-
-.center{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
+.center{display:flex;justify-content:center;align-items:center;}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div id="login" class="container center">
   <div class="card full" style="max-width:700px;">
     <h1 style="text-align:center;font-size:35px;">Nikolas Scripts</h1>
@@ -87,19 +71,15 @@ button:active{transform:scale(0.97)}
   </div>
 </div>
 
-<!-- PAINEL -->
 <div id="painel" class="container hidden">
-
   <h1>Nikolas Scripts</h1>
 
-  <!-- NORMAL -->
   <div id="navNormal" class="nav hidden">
     <button onclick="showTab('scripts')">Scripts</button>
     <button onclick="showTab('tutorial')">Tutorial</button>
     <button onclick="logout()">Sair</button>
   </div>
 
-  <!-- ADMIN -->
   <div id="navAdmin" class="nav hidden">
     <button onclick="showTab('adminUsers')">Admin</button>
     <button onclick="showTab('scripts')">Scripts</button>
@@ -110,7 +90,6 @@ button:active{transform:scale(0.97)}
   <div id="scripts" class="hidden"></div>
   <div id="tutorial" class="hidden"></div>
   <div id="adminUsers" class="hidden"></div>
-
 </div>
 
 <script>
@@ -120,7 +99,7 @@ const ADMIN_PASS="05082011";
 let users=JSON.parse(localStorage.getItem('users')||'[]');
 let pending=JSON.parse(localStorage.getItem('pending')||'[]');
 let maintenance=JSON.parse(localStorage.getItem('maintenance')||'[]');
-let scripts=JSON.parse(localStorage.getItem('scripts')||JSON.stringify([
+let scriptList=JSON.parse(localStorage.getItem('scripts')||JSON.stringify([
   {title:"Script Teste 1",code:"javascript:(function(){alert('Teste 1');})();"},
   {title:"Script Teste 2",code:"javascript:(function(){alert('Teste 2');})();"}
 ]));
@@ -131,16 +110,17 @@ function save(){
   localStorage.setItem('users',JSON.stringify(users));
   localStorage.setItem('pending',JSON.stringify(pending));
   localStorage.setItem('maintenance',JSON.stringify(maintenance));
-  localStorage.setItem('scripts',JSON.stringify(scripts));
+  localStorage.setItem('scripts',JSON.stringify(scriptList));
 }
 
 function handleLogin(){
-  const u=user.value;
-  const p=pass.value;
+  const u=document.getElementById('user').value;
+  const p=document.getElementById('pass').value;
 
   if(u===ADMIN_USER && p===ADMIN_PASS){
     currentUser={username:u,admin:true};
-    enter();return;
+    enter();
+    return;
   }
 
   const found=users.find(x=>x.username===u && x.password===p);
@@ -164,23 +144,17 @@ function enter(){
 
   if(currentUser.admin){
     document.getElementById('navAdmin').classList.remove('hidden');
-    document.getElementById('navNormal').classList.add('hidden');
   }else{
     document.getElementById('navNormal').classList.remove('hidden');
-    document.getElementById('navAdmin').classList.add('hidden');
-  }
-}else{
-    navNormal.classList.remove('hidden');
-    navAdmin.classList.add('hidden');
   }
 }
 
 function logout(){location.reload();}
 
 function hideAll(){
-  document.querySelectorAll('#painel > div').forEach(d=>{
-    if(!d.classList.contains('nav')) d.classList.add('hidden');
-  });
+  document.getElementById('scripts').classList.add('hidden');
+  document.getElementById('tutorial').classList.add('hidden');
+  document.getElementById('adminUsers').classList.add('hidden');
 }
 
 function showTab(id){
@@ -192,12 +166,12 @@ function showTab(id){
 }
 
 function renderScripts(){
-  scripts.innerHTML='';
+  const container=document.getElementById('scripts');
+  container.innerHTML='';
 
-  scripts.forEach(s=>{
+  scriptList.forEach(s=>{
     const card=document.createElement('div');
     card.className='card full';
-
     card.innerHTML=`<div class='script-title'>${s.title}</div><pre>${s.code}</pre>`;
 
     if(maintenance.includes(s.title)){
@@ -212,15 +186,17 @@ function renderScripts(){
         const maint=document.createElement('button');
         maint.innerText='Promover Manutenção';
         maint.onclick=()=>{
-          maintenance.push(s.title);
-          save();
-          renderScripts();
+          if(!maintenance.includes(s.title)){
+            maintenance.push(s.title);
+            save();
+            renderScripts();
+          }
         };
         card.appendChild(maint);
       }
     }
 
-    scripts.appendChild(card);
+    container.appendChild(card);
   });
 
   if(currentUser.admin){
@@ -229,25 +205,25 @@ function renderScripts(){
     add.onclick=()=>{
       const name=prompt('Nome do script:');
       const code=prompt('Código do script:');
-      if(name&&code){scripts.push({title:name,code:code});save();renderScripts();}
+      if(name&&code){scriptList.push({title:name,code:code});save();renderScripts();}
     };
 
     const del=document.createElement('button');
     del.innerText='Apagar Script';
     del.onclick=()=>{
-      const name=prompt('Nome do script para apagar:');
-      scripts=scripts.filter(x=>x.title!==name);
+      const name=prompt('Nome exato do script para apagar:');
+      scriptList=scriptList.filter(x=>x.title!==name);
       maintenance=maintenance.filter(x=>x!==name);
       save();renderScripts();
     };
 
-    scripts.appendChild(add);
-    scripts.appendChild(del);
+    container.appendChild(add);
+    container.appendChild(del);
   }
 }
 
 function renderTutorial(){
-  tutorial.innerHTML=`
+  document.getElementById('tutorial').innerHTML=`
   <div class='card full'>
   <h2>Como usar Bookmarklet</h2>
   <h3>💻 Computador</h3>
@@ -270,7 +246,8 @@ function renderTutorial(){
 }
 
 function renderAdmin(){
-  adminUsers.innerHTML='';
+  const container=document.getElementById('adminUsers');
+  container.innerHTML='';
 
   const card1=document.createElement('div');
   card1.className='card full';
@@ -288,7 +265,8 @@ function renderAdmin(){
     r.innerText='Recusar';
     r.onclick=()=>{pending=pending.filter(x=>x.username!==u.username);save();renderAdmin();};
 
-    div.appendChild(a);div.appendChild(r);
+    div.appendChild(a);
+    div.appendChild(r);
     card1.appendChild(div);
   });
 
@@ -313,10 +291,9 @@ function renderAdmin(){
     card2.appendChild(div);
   });
 
-  adminUsers.appendChild(card1);
-  adminUsers.appendChild(card2);
+  container.appendChild(card1);
+  container.appendChild(card2);
 }
-
 </script>
 
 </body>
