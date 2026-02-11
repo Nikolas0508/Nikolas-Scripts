@@ -83,7 +83,7 @@ button:active{transform:scale(0.97)}
     <h1 style="text-align:center;font-size:35px;">Nikolas Scripts</h1>
     <input id="user" placeholder="Usuário" class="full">
     <input id="pass" type="password" placeholder="Senha" class="full">
-    <button onclick="login()" class="full">Entrar / Solicitar Acesso</button>
+    <button onclick="handleLogin()" class="full">Entrar / Solicitar Acesso</button>
   </div>
 </div>
 
@@ -134,7 +134,7 @@ function save(){
   localStorage.setItem('scripts',JSON.stringify(scripts));
 }
 
-function login(){
+function handleLogin(){
   const u=user.value;
   const p=pass.value;
 
@@ -159,13 +159,17 @@ function login(){
 }
 
 function enter(){
-  login.classList.add('hidden');
-  painel.classList.remove('hidden');
+  document.getElementById('login').classList.add('hidden');
+  document.getElementById('painel').classList.remove('hidden');
 
   if(currentUser.admin){
-    navAdmin.classList.remove('hidden');
-    navNormal.classList.add('hidden');
+    document.getElementById('navAdmin').classList.remove('hidden');
+    document.getElementById('navNormal').classList.add('hidden');
   }else{
+    document.getElementById('navNormal').classList.remove('hidden');
+    document.getElementById('navAdmin').classList.add('hidden');
+  }
+}else{
     navNormal.classList.remove('hidden');
     navAdmin.classList.add('hidden');
   }
