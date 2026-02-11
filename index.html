@@ -1,300 +1,210 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Nikolas Scripts</title>
+import React, { useState, useEffect } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { motion } from "framer-motion";
 
-<style>
-body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#000814,#0a0f2c,#1a0033);
-  color:white;
-}
+// ====== SIMULAÇÃO DE BANCO (localStorage) ======
+const getData = (key, fallback) => {
+  const data = localStorage.getItem(key);
+  return data ? JSON.parse(data) : fallback;
+};
 
-h1,h2,h3{color:#a78bfa}
+const setData = (key, value) => {
+  localStorage.setItem(key, JSON.stringify(value));
+};
 
-.container{padding:30px;min-height:100vh;}
+export default function NikolasScriptsApp() {
+  const [user, setUser] = useState(null);
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [view, setView] = useState("inicio");
 
-.card{
-  background:rgba(0,0,0,0.9);
-  border:1px solid #7c3aed;
-  border-radius:18px;
-  padding:25px;
-  margin-bottom:20px;
-  animation:fadeIn 0.3s ease;
-}
+  const users = getData("users", []);
+  const scripts = getData("scripts", []);
 
-.full{width:100%;}
+  const isAdmin = user?.role === "admin";
 
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(10px)}
-  to{opacity:1; transform:translateY(0)}
-}
-
-input,button,select,textarea{
-  padding:12px;
-  margin:8px 0;
-  border-radius:10px;
-  border:none;
-  font-size:15px;
-}
-
-textarea{width:100%;height:120px}
-
-button{
-  background:#7c3aed;
-  color:white;
-  cursor:pointer;
-  transition:0.2s;
-}
-
-button:hover{transform:scale(1.05);box-shadow:0 0 15px #7c3aed;}
-button:active{transform:scale(0.97)}
-
-.script-title{color:#60a5fa;font-size:20px;font-weight:bold}
-.maintenance{color:#ff4d4d;font-weight:bold}
-.hidden{display:none}
-.nav button{margin-right:10px}
-.center{display:flex;justify-content:center;align-items:center;}
-</style>
-</head>
-<body>
-
-<div id="login" class="container center">
-  <div class="card full" style="max-width:700px;">
-    <h1 style="text-align:center;font-size:35px;">Nikolas Scripts</h1>
-    <input id="user" placeholder="Usuário" class="full">
-    <input id="pass" type="password" placeholder="Senha" class="full">
-    <button onclick="handleLogin()" class="full">Entrar / Solicitar Acesso</button>
-  </div>
-</div>
-
-<div id="painel" class="container hidden">
-  <h1>Nikolas Scripts</h1>
-
-  <div id="navNormal" class="nav hidden">
-    <button onclick="showTab('scripts')">Scripts</button>
-    <button onclick="showTab('tutorial')">Tutorial</button>
-    <button onclick="logout()">Sair</button>
-  </div>
-
-  <div id="navAdmin" class="nav hidden">
-    <button onclick="showTab('adminUsers')">Admin</button>
-    <button onclick="showTab('scripts')">Scripts</button>
-    <button onclick="showTab('tutorial')">Tutorial</button>
-    <button onclick="logout()">Sair</button>
-  </div>
-
-  <div id="scripts" class="hidden"></div>
-  <div id="tutorial" class="hidden"></div>
-  <div id="adminUsers" class="hidden"></div>
-</div>
-
-<script>
-const ADMIN_USER="NikolasP";
-const ADMIN_PASS="05082011";
-
-let users=JSON.parse(localStorage.getItem('users')||'[]');
-let pending=JSON.parse(localStorage.getItem('pending')||'[]');
-let maintenance=JSON.parse(localStorage.getItem('maintenance')||'[]');
-let scriptList=JSON.parse(localStorage.getItem('scripts')||JSON.stringify([
-  {title:"Script Teste 1",code:"javascript:(function(){alert('Teste 1');})();"},
-  {title:"Script Teste 2",code:"javascript:(function(){alert('Teste 2');})();"}
-]));
-
-let currentUser=null;
-
-function save(){
-  localStorage.setItem('users',JSON.stringify(users));
-  localStorage.setItem('pending',JSON.stringify(pending));
-  localStorage.setItem('maintenance',JSON.stringify(maintenance));
-  localStorage.setItem('scripts',JSON.stringify(scriptList));
-}
-
-function handleLogin(){
-  const u=document.getElementById('user').value;
-  const p=document.getElementById('pass').value;
-
-  if(u===ADMIN_USER && p===ADMIN_PASS){
-    currentUser={username:u,admin:true};
-    enter();
-    return;
-  }
-
-  const found=users.find(x=>x.username===u && x.password===p);
-  if(found){
-    currentUser={username:u,admin:false};
-    enter();
-  }else{
-    if(!pending.find(x=>x.username===u)){
-      pending.push({username:u,password:p});
-      save();
-      alert("Solicitação enviada para o administrador.");
-    }else{
-      alert("Sua solicitação está pendente.");
+  // Criar admin fixo
+  useEffect(() => {
+    if (!users.find(u => u.username === "NikolasP")) {
+      const adminUser = { username: "NikolasP", password: "2011", role: "admin" };
+      setData("users", [...users, adminUser]);
     }
-  }
-}
+  }, []);
 
-function enter(){
-  document.getElementById('login').classList.add('hidden');
-  document.getElementById('painel').classList.remove('hidden');
+  const handleLogin = () => {
+    const existing = users.find(u => u.username === username && u.password === password);
 
-  if(currentUser.admin){
-    document.getElementById('navAdmin').classList.remove('hidden');
-  }else{
-    document.getElementById('navNormal').classList.remove('hidden');
-  }
-}
-
-function logout(){location.reload();}
-
-function hideAll(){
-  document.getElementById('scripts').classList.add('hidden');
-  document.getElementById('tutorial').classList.add('hidden');
-  document.getElementById('adminUsers').classList.add('hidden');
-}
-
-function showTab(id){
-  hideAll();
-  document.getElementById(id).classList.remove('hidden');
-  if(id==='scripts') renderScripts();
-  if(id==='tutorial') renderTutorial();
-  if(id==='adminUsers') renderAdmin();
-}
-
-function renderScripts(){
-  const container=document.getElementById('scripts');
-  container.innerHTML='';
-
-  scriptList.forEach(s=>{
-    const card=document.createElement('div');
-    card.className='card full';
-    card.innerHTML=`<div class='script-title'>${s.title}</div><pre>${s.code}</pre>`;
-
-    if(maintenance.includes(s.title)){
-      card.innerHTML+=`<div class='maintenance'>⚠ Em manutenção</div>`;
-    }else{
-      const copy=document.createElement('button');
-      copy.innerText='Copiar Script';
-      copy.onclick=()=>navigator.clipboard.writeText(s.code);
-      card.appendChild(copy);
-
-      if(currentUser.admin){
-        const maint=document.createElement('button');
-        maint.innerText='Promover Manutenção';
-        maint.onclick=()=>{
-          if(!maintenance.includes(s.title)){
-            maintenance.push(s.title);
-            save();
-            renderScripts();
-          }
-        };
-        card.appendChild(maint);
-      }
+    if (existing) {
+      setUser(existing);
+    } else {
+      alert("Usuário ou senha incorretos");
     }
+  };
 
-    container.appendChild(card);
-  });
-
-  if(currentUser.admin){
-    const add=document.createElement('button');
-    add.innerText='Add Script';
-    add.onclick=()=>{
-      const name=prompt('Nome do script:');
-      const code=prompt('Código do script:');
-      if(name&&code){scriptList.push({title:name,code:code});save();renderScripts();}
-    };
-
-    const del=document.createElement('button');
-    del.innerText='Apagar Script';
-    del.onclick=()=>{
-      const name=prompt('Nome exato do script para apagar:');
-      scriptList=scriptList.filter(x=>x.title!==name);
-      maintenance=maintenance.filter(x=>x!==name);
-      save();renderScripts();
-    };
-
-    container.appendChild(add);
-    container.appendChild(del);
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-black via-green-950 to-black flex items-center justify-center text-green-400">
+        <Card className="p-8 w-96 bg-green-950/40 border border-green-500 shadow-[0_0_30px_#00ff88] rounded-2xl">
+          <CardContent className="space-y-4">
+            <h1 className="text-2xl font-bold text-green-300">Login</h1>
+            <Input className="bg-black border-green-500 text-green-300" placeholder="Usuário" value={username} onChange={e => setUsername(e.target.value)} />
+            <Input className="bg-black border-green-500 text-green-300" placeholder="Senha" type="password" value={password} onChange={e => setPassword(e.target.value)} />
+            <Button className="w-full bg-green-500 hover:bg-green-400 text-black font-bold" onClick={handleLogin}>Entrar</Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
   }
+
+  return (
+    <div className="flex min-h-screen bg-gradient-to-br from-black via-green-950 to-black text-green-300">
+      {/* Sidebar */}
+      <div className="w-64 bg-black/60 border-r border-green-500 p-4 space-y-4 shadow-[0_0_20px_#00ff88]">
+        <h2 className="text-xl font-bold text-green-400">Nikolas Scripts</h2>
+        <Button variant="ghost" className="w-full justify-start text-green-300 hover:bg-green-900" onClick={() => setView("inicio")}>Início</Button>
+        <Button variant="ghost" className="w-full justify-start text-green-300 hover:bg-green-900" onClick={() => setView("scripts")}>Scripts</Button>
+        <Button variant="ghost" className="w-full justify-start text-green-300 hover:bg-green-900" onClick={() => setView("tutorial")}>Tutorial</Button>
+        {isAdmin && (
+          <Button variant="ghost" className="w-full justify-start text-green-300 hover:bg-green-900" onClick={() => setView("admin")}>Admin</Button>
+        )}
+        <Button className="w-full bg-red-600 hover:bg-red-500 text-white" onClick={() => setUser(null)}>Sair</Button>
+      </div>
+
+      {/* Conteúdo */}
+      <div className="flex-1 p-8">
+        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold mb-6 text-green-400 drop-shadow-[0_0_10px_#00ff88]">
+          {user.username}
+        </motion.h1>
+
+        {view === "inicio" && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card className="bg-black/50 border border-green-500 shadow-[0_0_20px_#00ff88] rounded-2xl p-6">
+              <CardContent>
+                <h2 className="text-xl font-bold text-green-300">Scripts</h2>
+                <p>Acesse e copie scripts disponíveis</p>
+              </CardContent>
+            </Card>
+
+            {isAdmin && (
+              <Card className="bg-black/50 border border-green-500 shadow-[0_0_20px_#00ff88] rounded-2xl p-6">
+                <CardContent>
+                  <h2 className="text-xl font-bold text-green-300">Painel Admin</h2>
+                  <p>Gerencie acessos e scripts</p>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {view === "scripts" && (
+          <div className="space-y-4">
+            {scripts.map((s, i) => (
+              <Card key={i} className="bg-black/50 border border-green-500 rounded-2xl p-4">
+                <CardContent>
+                  <h2 className="font-bold text-green-400">{s.name}</h2>
+                  {s.maintenance ? (
+                    <p className="text-red-400">Em manutenção</p>
+                  ) : (
+                    <Textarea readOnly className="bg-black text-green-300 border-green-500" value={s.code} />
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {view === "tutorial" && (
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold text-green-400">Como usar Bookmarklet</h2>
+            <p><strong>No Computador:</strong></p>
+            <ol className="list-decimal ml-6 space-y-1">
+              <li>Copie o script.</li>
+              <li>Crie um novo favorito no navegador.</li>
+              <li>No campo URL, cole o script.</li>
+              <li>Salve e clique quando quiser executar.</li>
+            </ol>
+            <p><strong>No Celular:</strong></p>
+            <ol className="list-decimal ml-6 space-y-1">
+              <li>Adicione qualquer página aos favoritos.</li>
+              <li>Edite o favorito.</li>
+              <li>Apague a URL e cole o script.</li>
+              <li>Salve e execute tocando no favorito.</li>
+            </ol>
+          </div>
+        )}
+
+        {view === "admin" && isAdmin && <AdminPanel />}
+      </div>
+    </div>
+  );
 }
 
-function renderTutorial(){
-  document.getElementById('tutorial').innerHTML=`
-  <div class='card full'>
-  <h2>Como usar Bookmarklet</h2>
-  <h3>💻 Computador</h3>
-  <ol>
-  <li>Copie o script.</li>
-  <li>Pressione CTRL + SHIFT + B.</li>
-  <li>Clique com botão direito → Novo Favorito.</li>
-  <li>Cole o código no campo URL.</li>
-  <li>Clique no favorito para executar.</li>
-  </ol>
-  <h3>📱 Celular</h3>
-  <ol>
-  <li>Copie o script.</li>
-  <li>Crie um favorito.</li>
-  <li>Edite o favorito.</li>
-  <li>Cole o código no campo URL.</li>
-  <li>Salve e toque para executar.</li>
-  </ol>
-  </div>`;
+function AdminPanel() {
+  const [scripts, setScriptsState] = useState(getData("scripts", []));
+  const [users, setUsersState] = useState(getData("users", []));
+  const [name, setName] = useState("");
+  const [code, setCode] = useState("");
+
+  const addScript = () => {
+    const updated = [...scripts, { name, code, maintenance: false }];
+    setScriptsState(updated);
+    setData("scripts", updated);
+    setName("");
+    setCode("");
+  };
+
+  const toggleMaintenance = (index) => {
+    scripts[index].maintenance = !scripts[index].maintenance;
+    setScriptsState([...scripts]);
+    setData("scripts", scripts);
+  };
+
+  const deleteScript = (index) => {
+    const updated = scripts.filter((_, i) => i !== index);
+    setScriptsState(updated);
+    setData("scripts", updated);
+  };
+
+  const removeUser = (username) => {
+    const updated = users.filter(u => u.username !== username);
+    setUsersState(updated);
+    setData("users", updated);
+  };
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-xl font-bold text-green-400 mb-2">Adicionar Script</h2>
+        <Input className="bg-black border-green-500 text-green-300 mb-2" placeholder="Nome do Script" value={name} onChange={e => setName(e.target.value)} />
+        <Textarea className="bg-black border-green-500 text-green-300 mb-2" placeholder="Código" value={code} onChange={e => setCode(e.target.value)} />
+        <Button className="bg-green-500 hover:bg-green-400 text-black font-bold" onClick={addScript}>Adicionar</Button>
+      </div>
+
+      <div>
+        <h2 className="text-xl font-bold text-green-400">Gerenciar Scripts</h2>
+        {scripts.map((s, i) => (
+          <div key={i} className="flex gap-2 items-center">
+            <span>{s.name}</span>
+            <Button className="bg-yellow-500 text-black" onClick={() => toggleMaintenance(i)}>Manutenção</Button>
+            <Button className="bg-red-600 text-white" onClick={() => deleteScript(i)}>Excluir</Button>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <h2 className="text-xl font-bold text-green-400">Usuários</h2>
+        {users.map((u, i) => (
+          <div key={i} className="flex gap-2">
+            <span>{u.username} ({u.role})</span>
+            {u.role !== "admin" && (
+              <Button className="bg-red-600 text-white" onClick={() => removeUser(u.username)}>Remover</Button>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
-
-function renderAdmin(){
-  const container=document.getElementById('adminUsers');
-  container.innerHTML='';
-
-  const card1=document.createElement('div');
-  card1.className='card full';
-  card1.innerHTML='<h2>Logins Pendentes</h2>';
-
-  pending.forEach(u=>{
-    const div=document.createElement('div');
-    div.innerHTML=`${u.username}<br>`;
-
-    const a=document.createElement('button');
-    a.innerText='Aceitar';
-    a.onclick=()=>{users.push(u);pending=pending.filter(x=>x.username!==u.username);save();renderAdmin();};
-
-    const r=document.createElement('button');
-    r.innerText='Recusar';
-    r.onclick=()=>{pending=pending.filter(x=>x.username!==u.username);save();renderAdmin();};
-
-    div.appendChild(a);
-    div.appendChild(r);
-    card1.appendChild(div);
-  });
-
-  const card2=document.createElement('div');
-  card2.className='card full';
-  card2.innerHTML='<h2>Usuários Aprovados</h2>';
-
-  users.forEach(u=>{
-    const div=document.createElement('div');
-    div.innerHTML=`${u.username}<br>`;
-
-    const remove=document.createElement('button');
-    remove.innerText='Remover';
-    remove.onclick=()=>{
-      users=users.filter(x=>x.username!==u.username);
-      save();
-      alert('Licença removida. Usuário deve solicitar novamente.');
-      renderAdmin();
-    };
-
-    div.appendChild(remove);
-    card2.appendChild(div);
-  });
-
-  container.appendChild(card1);
-  container.appendChild(card2);
-}
-</script>
-
-</body>
-</html>
