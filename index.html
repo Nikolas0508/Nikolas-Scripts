@@ -1,287 +1,318 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-br">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nikolas Scripts</title>
+
 <style>
 body{
-    margin:0;
-    font-family:Arial;
-    background:#0a0f1f;
-    color:white;
-    display:flex;
-    justify-content:center;
-    align-items:center;
-    height:100vh;
+  margin:0;
+  font-family:Arial, sans-serif;
+  background:linear-gradient(135deg,#000814,#0a0f2c,#1a0033);
+  color:white;
 }
+
+h1,h2,h3{color:#a78bfa}
+
 .container{
-    background:#111a2e;
-    padding:40px;
-    border-radius:15px;
-    width:420px;
-    box-shadow:0 0 20px #6a00ff;
-    text-align:center;
+  padding:30px;
+  min-height:100vh;
 }
-input{
-    width:100%;
-    padding:12px;
-    margin:10px 0;
-    border-radius:8px;
-    border:none;
-    background:#1e2a4a;
-    color:white;
+
+.card{
+  background:rgba(0,0,0,0.9);
+  border:1px solid #7c3aed;
+  border-radius:18px;
+  padding:25px;
+  margin-bottom:20px;
+  animation:fadeIn 0.3s ease;
 }
+
+.full{
+  width:100%;
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px)}
+  to{opacity:1; transform:translateY(0)}
+}
+
+input,button,select,textarea{
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
+  border:none;
+  font-size:15px;
+}
+
+textarea{width:100%;height:120px}
+
 button{
-    width:100%;
-    padding:12px;
-    margin:10px 0;
-    border:none;
-    border-radius:8px;
-    background:linear-gradient(45deg,#6a00ff,#001aff);
-    color:white;
-    cursor:pointer;
-    transition:0.2s;
+  background:#7c3aed;
+  color:white;
+  cursor:pointer;
+  transition:0.2s;
 }
+
 button:hover{
-    transform:scale(1.05);
-    box-shadow:0 0 10px #6a00ff;
+  transform:scale(1.05);
+  box-shadow:0 0 15px #7c3aed;
 }
-.hidden{display:none;}
-.scriptBox{
-    background:#1e2a4a;
-    padding:15px;
-    border-radius:10px;
-    margin:10px 0;
-}
-.maintenance{
-    opacity:0.5;
+
+button:active{transform:scale(0.97)}
+
+.script-title{color:#60a5fa;font-size:20px;font-weight:bold}
+.maintenance{color:#ff4d4d;font-weight:bold}
+.hidden{display:none}
+
+.nav button{margin-right:10px}
+
+.center{
+  display:flex;
+  justify-content:center;
+  align-items:center;
 }
 </style>
 </head>
 <body>
 
-<div class="container" id="loginBox">
-    <h2>Nikolas Scripts</h2>
-    <input id="username" placeholder="Usuário">
-    <input id="password" type="password" placeholder="Senha">
-    <button onclick="login()">Entrar / Criar</button>
-    <p id="loginMsg"></p>
+<!-- LOGIN -->
+<div id="login" class="container center">
+  <div class="card full" style="max-width:700px;">
+    <h1 style="text-align:center;font-size:35px;">Nikolas Scripts</h1>
+    <input id="user" placeholder="Usuário" class="full">
+    <input id="pass" type="password" placeholder="Senha" class="full">
+    <button onclick="login()" class="full">Entrar / Solicitar Acesso</button>
+  </div>
 </div>
 
-<div class="container hidden" id="home">
-    <h2>Menu</h2>
-    <button onclick="openScripts()">Scripts</button>
-    <button onclick="openTutorial()">Tutorial</button>
-    <button id="adminPanelBtn" class="hidden" onclick="openAdmin()">Admin</button>
+<!-- PAINEL -->
+<div id="painel" class="container hidden">
+
+  <h1>Nikolas Scripts</h1>
+
+  <!-- NORMAL -->
+  <div id="navNormal" class="nav hidden">
+    <button onclick="showTab('scripts')">Scripts</button>
+    <button onclick="showTab('tutorial')">Tutorial</button>
     <button onclick="logout()">Sair</button>
-</div>
+  </div>
 
-<div class="container hidden" id="scriptsPage">
-    <h2>Scripts</h2>
-    <div id="scriptsList"></div>
-    <button onclick="backHome()">Voltar</button>
-</div>
+  <!-- ADMIN -->
+  <div id="navAdmin" class="nav hidden">
+    <button onclick="showTab('adminUsers')">Admin</button>
+    <button onclick="showTab('scripts')">Scripts</button>
+    <button onclick="showTab('tutorial')">Tutorial</button>
+    <button onclick="logout()">Sair</button>
+  </div>
 
-<div class="container hidden" id="tutorialPage">
-    <h2>Como usar Bookmarklet</h2>
-    <p><b>Computador:</b></p>
-    <p>1. Copie o script.</p>
-    <p>2. Pressione CTRL + SHIFT + B.</p>
-    <p>3. Clique com botão direito na barra de favoritos.</p>
-    <p>4. Clique em "Adicionar página".</p>
-    <p>5. Apague a URL e cole o script.</p>
-    <p>6. Salve e clique nele para executar.</p>
-    <br>
-    <p><b>Celular:</b></p>
-    <p>1. Copie o script.</p>
-    <p>2. Crie um favorito qualquer.</p>
-    <p>3. Edite o favorito.</p>
-    <p>4. Apague a URL.</p>
-    <p>5. Cole o script.</p>
-    <p>6. Salve e execute.</p>
-    <button onclick="backHome()">Voltar</button>
-</div>
+  <div id="scripts" class="hidden"></div>
+  <div id="tutorial" class="hidden"></div>
+  <div id="adminUsers" class="hidden"></div>
 
-<div class="container hidden" id="adminPage">
-    <h2>Painel Admin</h2>
-
-    <h3>Logins Pendentes</h3>
-    <div id="pendingList"></div>
-
-    <h3>Usuários Aprovados</h3>
-    <div id="approvedList"></div>
-
-    <h3>Scripts</h3>
-    <input id="newScriptName" placeholder="Nome do Script">
-    <input id="newScriptCode" placeholder="Código do Script">
-    <button onclick="addScript()">Adicionar Script</button>
-
-    <h3>Modo Manutenção</h3>
-    <div id="maintenanceList"></div>
-
-    <button onclick="backHome()">Voltar</button>
 </div>
 
 <script>
-let adminUser="NikolasP";
-let adminPass="05082011";
+const ADMIN_USER="NikolasP";
+const ADMIN_PASS="05082011";
 
-let users=JSON.parse(localStorage.getItem("users"))||{};
-let pendingUsers=JSON.parse(localStorage.getItem("pendingUsers"))||{};
-let scripts=JSON.parse(localStorage.getItem("scripts"))||{
-    "Script Teste":"javascript:alert('Funcionando!')"
-};
-let maintenance=JSON.parse(localStorage.getItem("maintenance"))||{};
+let users=JSON.parse(localStorage.getItem('users')||'[]');
+let pending=JSON.parse(localStorage.getItem('pending')||'[]');
+let maintenance=JSON.parse(localStorage.getItem('maintenance')||'[]');
+let scripts=JSON.parse(localStorage.getItem('scripts')||JSON.stringify([
+  {title:"Script Teste 1",code:"javascript:(function(){alert('Teste 1');})();"},
+  {title:"Script Teste 2",code:"javascript:(function(){alert('Teste 2');})();"}
+]));
+
+let currentUser=null;
 
 function save(){
-    localStorage.setItem("users",JSON.stringify(users));
-    localStorage.setItem("pendingUsers",JSON.stringify(pendingUsers));
-    localStorage.setItem("scripts",JSON.stringify(scripts));
-    localStorage.setItem("maintenance",JSON.stringify(maintenance));
+  localStorage.setItem('users',JSON.stringify(users));
+  localStorage.setItem('pending',JSON.stringify(pending));
+  localStorage.setItem('maintenance',JSON.stringify(maintenance));
+  localStorage.setItem('scripts',JSON.stringify(scripts));
 }
 
 function login(){
-    let u=username.value;
-    let p=password.value;
+  const u=user.value;
+  const p=pass.value;
 
-    if(u===adminUser && p===adminPass){
-        showHome(true);
-        return;
-    }
+  if(u===ADMIN_USER && p===ADMIN_PASS){
+    currentUser={username:u,admin:true};
+    enter();return;
+  }
 
-    if(users[u] && users[u]===p){
-        showHome(false);
-    }else if(pendingUsers[u]){
-        loginMsg.innerText="Aguardando aprovação.";
+  const found=users.find(x=>x.username===u && x.password===p);
+  if(found){
+    currentUser={username:u,admin:false};
+    enter();
+  }else{
+    if(!pending.find(x=>x.username===u)){
+      pending.push({username:u,password:p});
+      save();
+      alert("Solicitação enviada para o administrador.");
     }else{
-        pendingUsers[u]=p;
-        save();
-        loginMsg.innerText="Solicitação enviada!";
+      alert("Sua solicitação está pendente.");
     }
+  }
 }
 
-function showHome(isAdmin){
-    loginBox.classList.add("hidden");
-    home.classList.remove("hidden");
-    if(isAdmin){
-        adminPanelBtn.classList.remove("hidden");
-        loadAdmin();
-    }
+function enter(){
+  login.classList.add('hidden');
+  painel.classList.remove('hidden');
+
+  if(currentUser.admin){
+    navAdmin.classList.remove('hidden');
+    navNormal.classList.add('hidden');
+  }else{
+    navNormal.classList.remove('hidden');
+    navAdmin.classList.add('hidden');
+  }
 }
 
-function logout(){
-    location.reload();
+function logout(){location.reload();}
+
+function hideAll(){
+  document.querySelectorAll('#painel > div').forEach(d=>{
+    if(!d.classList.contains('nav')) d.classList.add('hidden');
+  });
 }
 
-function openScripts(){
-    home.classList.add("hidden");
-    scriptsPage.classList.remove("hidden");
-    loadScripts();
+function showTab(id){
+  hideAll();
+  document.getElementById(id).classList.remove('hidden');
+  if(id==='scripts') renderScripts();
+  if(id==='tutorial') renderTutorial();
+  if(id==='adminUsers') renderAdmin();
 }
 
-function openTutorial(){
-    home.classList.add("hidden");
-    tutorialPage.classList.remove("hidden");
-}
+function renderScripts(){
+  scripts.innerHTML='';
 
-function openAdmin(){
-    home.classList.add("hidden");
-    adminPage.classList.remove("hidden");
-    loadAdmin();
-}
+  scripts.forEach(s=>{
+    const card=document.createElement('div');
+    card.className='card full';
 
-function backHome(){
-    scriptsPage.classList.add("hidden");
-    tutorialPage.classList.add("hidden");
-    adminPage.classList.add("hidden");
-    home.classList.remove("hidden");
-}
+    card.innerHTML=`<div class='script-title'>${s.title}</div><pre>${s.code}</pre>`;
 
-function loadScripts(){
-    scriptsList.innerHTML="";
-    for(let name in scripts){
-        let div=document.createElement("div");
-        div.className="scriptBox";
-        if(maintenance[name]) div.classList.add("maintenance");
-        div.innerHTML="<b>"+name+"</b><br>";
-        if(!maintenance[name]){
-            div.innerHTML+="<button onclick=\"copyScript('"+name+"')\">Copiar</button>";
-        }else{
-            div.innerHTML+="<p>⚠ Em manutenção</p>";
-        }
-        scriptsList.appendChild(div);
-    }
-}
+    if(maintenance.includes(s.title)){
+      card.innerHTML+=`<div class='maintenance'>⚠ Em manutenção</div>`;
+    }else{
+      const copy=document.createElement('button');
+      copy.innerText='Copiar Script';
+      copy.onclick=()=>navigator.clipboard.writeText(s.code);
+      card.appendChild(copy);
 
-function copyScript(name){
-    navigator.clipboard.writeText(scripts[name]);
-    alert("Script copiado!");
-}
-
-function loadAdmin(){
-    pendingList.innerHTML="";
-    approvedList.innerHTML="";
-    maintenanceList.innerHTML="";
-
-    for(let u in pendingUsers){
-        let div=document.createElement("div");
-        div.innerHTML=u+
-        "<button onclick=\"approveUser('"+u+"')\">Aceitar</button>"+
-        "<button onclick=\"rejectUser('"+u+"')\">Recusar</button>";
-        pendingList.appendChild(div);
+      if(currentUser.admin){
+        const maint=document.createElement('button');
+        maint.innerText='Promover Manutenção';
+        maint.onclick=()=>{
+          maintenance.push(s.title);
+          save();
+          renderScripts();
+        };
+        card.appendChild(maint);
+      }
     }
 
-    for(let u in users){
-        let div=document.createElement("div");
-        div.innerHTML=u+
-        "<button onclick=\"removeUser('"+u+"')\">Remover Licença</button>";
-        approvedList.appendChild(div);
-    }
+    scripts.appendChild(card);
+  });
 
-    for(let name in scripts){
-        let div=document.createElement("div");
-        div.innerHTML=name+
-        "<button onclick=\"toggleMaintenance('"+name+"')\">"+
-        (maintenance[name]?"Desativar":"Ativar")+
-        "</button>";
-        maintenanceList.appendChild(div);
-    }
+  if(currentUser.admin){
+    const add=document.createElement('button');
+    add.innerText='Add Script';
+    add.onclick=()=>{
+      const name=prompt('Nome do script:');
+      const code=prompt('Código do script:');
+      if(name&&code){scripts.push({title:name,code:code});save();renderScripts();}
+    };
+
+    const del=document.createElement('button');
+    del.innerText='Apagar Script';
+    del.onclick=()=>{
+      const name=prompt('Nome do script para apagar:');
+      scripts=scripts.filter(x=>x.title!==name);
+      maintenance=maintenance.filter(x=>x!==name);
+      save();renderScripts();
+    };
+
+    scripts.appendChild(add);
+    scripts.appendChild(del);
+  }
 }
 
-function approveUser(u){
-    users[u]=pendingUsers[u];
-    delete pendingUsers[u];
-    save();
-    loadAdmin();
+function renderTutorial(){
+  tutorial.innerHTML=`
+  <div class='card full'>
+  <h2>Como usar Bookmarklet</h2>
+  <h3>💻 Computador</h3>
+  <ol>
+  <li>Copie o script.</li>
+  <li>Pressione CTRL + SHIFT + B.</li>
+  <li>Clique com botão direito → Novo Favorito.</li>
+  <li>Cole o código no campo URL.</li>
+  <li>Clique no favorito para executar.</li>
+  </ol>
+  <h3>📱 Celular</h3>
+  <ol>
+  <li>Copie o script.</li>
+  <li>Crie um favorito.</li>
+  <li>Edite o favorito.</li>
+  <li>Cole o código no campo URL.</li>
+  <li>Salve e toque para executar.</li>
+  </ol>
+  </div>`;
 }
 
-function rejectUser(u){
-    delete pendingUsers[u];
-    save();
-    loadAdmin();
+function renderAdmin(){
+  adminUsers.innerHTML='';
+
+  const card1=document.createElement('div');
+  card1.className='card full';
+  card1.innerHTML='<h2>Logins Pendentes</h2>';
+
+  pending.forEach(u=>{
+    const div=document.createElement('div');
+    div.innerHTML=`${u.username}<br>`;
+
+    const a=document.createElement('button');
+    a.innerText='Aceitar';
+    a.onclick=()=>{users.push(u);pending=pending.filter(x=>x.username!==u.username);save();renderAdmin();};
+
+    const r=document.createElement('button');
+    r.innerText='Recusar';
+    r.onclick=()=>{pending=pending.filter(x=>x.username!==u.username);save();renderAdmin();};
+
+    div.appendChild(a);div.appendChild(r);
+    card1.appendChild(div);
+  });
+
+  const card2=document.createElement('div');
+  card2.className='card full';
+  card2.innerHTML='<h2>Usuários Aprovados</h2>';
+
+  users.forEach(u=>{
+    const div=document.createElement('div');
+    div.innerHTML=`${u.username}<br>`;
+
+    const remove=document.createElement('button');
+    remove.innerText='Remover';
+    remove.onclick=()=>{
+      users=users.filter(x=>x.username!==u.username);
+      save();
+      alert('Licença removida. Usuário deve solicitar novamente.');
+      renderAdmin();
+    };
+
+    div.appendChild(remove);
+    card2.appendChild(div);
+  });
+
+  adminUsers.appendChild(card1);
+  adminUsers.appendChild(card2);
 }
 
-function removeUser(u){
-    delete users[u];
-    save();
-    loadAdmin();
-}
-
-function addScript(){
-    let n=newScriptName.value;
-    let c=newScriptCode.value;
-    if(n && c){
-        scripts[n]=c;
-        save();
-        loadAdmin();
-    }
-}
-
-function toggleMaintenance(name){
-    maintenance[name]=!maintenance[name];
-    save();
-    loadAdmin();
-}
 </script>
 
 </body>
