@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nikolas Scripts</title>
+
 <style>
 body{
   margin:0;
@@ -11,129 +12,175 @@ body{
   background:linear-gradient(135deg,#000814,#0a0f2c,#1a0033);
   color:white;
 }
-.container{padding:20px;}
+
+.container{padding:30px;}
+
 .card{
-  background:rgba(0,0,0,0.8);
+  background:rgba(0,0,0,0.85);
   border:1px solid #7c3aed;
-  border-radius:16px;
-  padding:20px;
+  border-radius:18px;
+  padding:25px;
   margin-bottom:20px;
+  animation:fadeIn 0.4s ease;
 }
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px)}
+  to{opacity:1; transform:translateY(0)}
+}
+
 input,button{
-  padding:10px;
-  margin:5px 0;
-  border-radius:8px;
+  padding:12px;
+  margin:8px 0;
+  border-radius:10px;
   border:none;
+  font-size:15px;
 }
+
 button{
   background:#7c3aed;
   color:white;
   cursor:pointer;
+  transition:0.2s;
 }
-button:hover{opacity:0.8}
+
+button:hover{
+  transform:scale(1.05);
+  box-shadow:0 0 15px #7c3aed;
+}
+
+button:active{transform:scale(0.97)}
+
 .script-title{color:#a78bfa;font-size:18px;font-weight:bold}
 .maintenance{color:#ff4d4d;font-weight:bold}
-.nav button{margin-right:10px}
 .hidden{display:none}
+
+.nav button{margin-right:10px}
 </style>
 </head>
 <body>
 
+<!-- LOGIN -->
 <div id="login" class="container">
-  <div class="card" style="max-width:400px;margin:auto;">
-    <h2 style="text-align:center;color:#a78bfa;">Nikolas Scripts</h2>
+  <div class="card" style="max-width:550px;margin:auto;">
+    <h2 style="text-align:center;color:#a78bfa;font-size:28px;">Nikolas Scripts</h2>
     <input id="user" placeholder="Usuário">
     <input id="pass" type="password" placeholder="Senha">
     <button onclick="login()">Entrar / Solicitar Acesso</button>
   </div>
 </div>
 
+<!-- PAINEL -->
 <div id="painel" class="container hidden">
   <h1 style="color:#a78bfa;">Nikolas Scripts</h1>
-  <div class="nav">
+
+  <div class="nav" id="navNormal">
+    <button onclick="showTab('home')">Início</button>
     <button onclick="showTab('scripts')">Scripts</button>
-    <button id="adminBtn" onclick="showTab('admin')" class="hidden">Admin</button>
+    <button onclick="showTab('tutorial')">Tutorial</button>
     <button onclick="logout()">Sair</button>
   </div>
 
-  <div id="scripts"></div>
-  <div id="admin" class="hidden"></div>
+  <div class="nav hidden" id="navAdmin">
+    <button onclick="showTab('adminUsers')">Usuários</button>
+    <button onclick="showTab('adminScripts')">Gerenciar Scripts</button>
+    <button onclick="showTab('adminMaintenance')">Manutenção</button>
+    <button onclick="logout()">Sair</button>
+  </div>
+
+  <div id="home" class="card">Bem-vindo ao painel.</div>
+  <div id="scripts" class="hidden"></div>
+  <div id="tutorial" class="hidden"></div>
+
+  <div id="adminUsers" class="hidden"></div>
+  <div id="adminScripts" class="hidden"></div>
+  <div id="adminMaintenance" class="hidden"></div>
 </div>
 
 <script>
 const ADMIN_USER="NikolasP";
 const ADMIN_PASS="05082011";
 
-let users=[];
-let pending=[];
-let currentUser=null;
-let maintenanceScripts=[];
-
-let scripts=[
+let users=JSON.parse(localStorage.getItem('users')||'[]');
+let pending=JSON.parse(localStorage.getItem('pending')||'[]');
+let maintenanceScripts=JSON.parse(localStorage.getItem('maintenance')||'[]');
+let scripts=JSON.parse(localStorage.getItem('scripts')||JSON.stringify([
   {title:"Auto Farm",code:"javascript:(function(){alert('Auto Farm Ativado');})();"},
   {title:"Speed Boost",code:"javascript:(function(){alert('Speed Boost Ativado');})();"}
-];
+]));
+
+let currentUser=null;
+
+function save(){
+  localStorage.setItem('users',JSON.stringify(users));
+  localStorage.setItem('pending',JSON.stringify(pending));
+  localStorage.setItem('maintenance',JSON.stringify(maintenanceScripts));
+  localStorage.setItem('scripts',JSON.stringify(scripts));
+}
 
 function login(){
-  const u=document.getElementById('user').value;
-  const p=document.getElementById('pass').value;
+  const u=user.value;
+  const p=pass.value;
 
   if(u===ADMIN_USER && p===ADMIN_PASS){
     currentUser={username:u,admin:true};
-    enter();
-    return;
+    enter();return;
   }
 
   const found=users.find(x=>x.username===u && x.password===p);
   if(found){
-    currentUser={username:u,admin:false};
-    enter();
+    currentUser={username:u,admin:false};enter();
   }else{
     if(!pending.find(x=>x.username===u)){
       pending.push({username:u,password:p});
-      alert("Solicitação enviada para o administrador.");
-    }else{
-      alert("Sua solicitação já está pendente.");
-    }
+      save();
+      alert("Solicitação enviada.");
+    }else alert("Já está pendente.");
   }
 }
 
 function enter(){
-  document.getElementById('login').classList.add('hidden');
-  document.getElementById('painel').classList.remove('hidden');
+  loginDiv.classList.add('hidden');
+  painel.classList.remove('hidden');
+
   if(currentUser.admin){
-    document.getElementById('adminBtn').classList.remove('hidden');
+    navNormal.classList.add('hidden');
+    navAdmin.classList.remove('hidden');
+    showTab('adminUsers');
+  }else{
+    navAdmin.classList.add('hidden');
+    navNormal.classList.remove('hidden');
+    showTab('home');
   }
-  renderScripts();
 }
 
 function logout(){location.reload();}
 
-function showTab(tab){
-  document.getElementById('scripts').classList.add('hidden');
-  document.getElementById('admin').classList.add('hidden');
-  document.getElementById(tab).classList.remove('hidden');
-  if(tab==='admin') renderAdmin();
+function hideAll(){
+  document.querySelectorAll('#painel > div').forEach(d=>{
+    if(!d.classList.contains('nav')) d.classList.add('hidden');
+  });
+}
+
+function showTab(id){
+  hideAll();
+  document.getElementById(id).classList.remove('hidden');
+  if(id==='scripts') renderScripts();
+  if(id==='tutorial') renderTutorial();
+  if(id==='adminUsers') renderAdminUsers();
+  if(id==='adminScripts') renderAdminScripts();
+  if(id==='adminMaintenance') renderMaintenance();
 }
 
 function renderScripts(){
-  const div=document.getElementById('scripts');
-  div.innerHTML='';
-
+  scriptsDiv.innerHTML='';
   scripts.forEach(s=>{
     const card=document.createElement('div');
     card.className='card';
-
-    card.innerHTML=`
-      <div class="script-title">${s.title}</div>
-      <pre>${s.code}</pre>
-    `;
+    card.innerHTML=`<div class='script-title'>${s.title}</div><pre>${s.code}</pre>`;
 
     if(maintenanceScripts.includes(s.title)){
-      const m=document.createElement('div');
-      m.className='maintenance';
-      m.innerText='⚠ Script em manutenção';
-      card.appendChild(m);
+      card.innerHTML+="<div class='maintenance'>⚠ Em manutenção</div>";
     }else{
       const btn=document.createElement('button');
       btn.innerText='Copiar Script';
@@ -141,34 +188,34 @@ function renderScripts(){
       card.appendChild(btn);
     }
 
-    if(currentUser.admin){
-      const del=document.createElement('button');
-      del.style.background='red';
-      del.innerText='Excluir';
-      del.onclick=()=>{
-        scripts=scripts.filter(x=>x.title!==s.title);
-        maintenanceScripts=maintenanceScripts.filter(x=>x!==s.title);
-        renderScripts();
-      };
-      card.appendChild(del);
-    }
-
-    div.appendChild(card);
+    scriptsDiv.appendChild(card);
   });
+}
 
-  div.innerHTML+=`
-  <div class="card">
-  <h3 style="color:#60a5fa">Tutorial</h3>
-  <p>💻 Computador: Copie o script, pressione CTRL + SHIFT + B, crie um favorito e cole o código na URL. Depois clique nele.</p>
-  <p>📱 Celular: Copie o script, crie um favorito, edite e cole o código na URL. Depois toque nele.</p>
+function renderTutorial(){
+  tutorial.innerHTML=`<div class='card'>
+  <h3 style='color:#60a5fa'>Tutorial Completo</h3>
+  <p><b>Computador:</b></p>
+  <ol>
+  <li>Copie o script.</li>
+  <li>Pressione CTRL + SHIFT + B.</li>
+  <li>Crie novo favorito.</li>
+  <li>Cole o código na URL.</li>
+  <li>Clique no favorito para executar.</li>
+  </ol>
+  <p><b>Celular:</b></p>
+  <ol>
+  <li>Copie o script.</li>
+  <li>Crie um favorito.</li>
+  <li>Edite e cole o código na URL.</li>
+  <li>Toque no favorito para executar.</li>
+  </ol>
   </div>`;
 }
 
-function renderAdmin(){
-  const div=document.getElementById('admin');
-  div.innerHTML='';
+function renderAdminUsers(){
+  adminUsers.innerHTML="<div class='card'><h3>Solicitações</h3></div>";
 
-  div.innerHTML+=`<div class="card"><h3>Solicitações Pendentes</h3></div>`;
   pending.forEach(u=>{
     const c=document.createElement('div');
     c.className='card';
@@ -176,28 +223,63 @@ function renderAdmin(){
 
     const a=document.createElement('button');
     a.innerText='Aceitar';
-    a.onclick=()=>{
-      users.push(u);
-      pending=pending.filter(x=>x.username!==u.username);
-      renderAdmin();
-    };
+    a.onclick=()=>{users.push(u);pending=pending.filter(x=>x.username!==u.username);save();renderAdminUsers();};
 
     const r=document.createElement('button');
     r.innerText='Recusar';
     r.style.background='red';
-    r.onclick=()=>{
-      pending=pending.filter(x=>x.username!==u.username);
-      renderAdmin();
-    };
+    r.onclick=()=>{pending=pending.filter(x=>x.username!==u.username);save();renderAdminUsers();};
 
-    c.appendChild(a);
-    c.appendChild(r);
-    div.appendChild(c);
+    c.appendChild(a);c.appendChild(r);
+    adminUsers.appendChild(c);
   });
 
-  const maint=document.createElement('div');
-  maint.className='card';
-  maint.innerHTML='<h3>Modo Manutenção de Scripts</h3>';
+  adminUsers.innerHTML+="<div class='card'><h3>Usuários Ativos</h3></div>";
+
+  users.forEach(u=>{
+    const c=document.createElement('div');
+    c.className='card';
+    c.innerHTML=`${u.username}<br>`;
+
+    const revoke=document.createElement('button');
+    revoke.innerText='Remover Licença';
+    revoke.style.background='orange';
+    revoke.onclick=()=>{users=users.filter(x=>x.username!==u.username);save();renderAdminUsers();};
+
+    c.appendChild(revoke);
+    adminUsers.appendChild(c);
+  });
+}
+
+function renderAdminScripts(){
+  adminScripts.innerHTML="<div class='card'><h3>Gerenciar Scripts</h3></div>";
+
+  scripts.forEach(s=>{
+    const c=document.createElement('div');
+    c.className='card';
+    c.innerHTML=s.title;
+
+    const del=document.createElement('button');
+    del.innerText='Excluir';
+    del.style.background='red';
+    del.onclick=()=>{scripts=scripts.filter(x=>x.title!==s.title);maintenanceScripts=maintenanceScripts.filter(x=>x!==s.title);save();renderAdminScripts();};
+
+    c.appendChild(del);
+    adminScripts.appendChild(c);
+  });
+
+  const add=document.createElement('button');
+  add.innerText='Adicionar Script';
+  add.onclick=()=>{
+    const t=prompt('Nome do Script:');
+    const c=prompt('Código:');
+    if(t&&c){scripts.push({title:t,code:c});save();renderAdminScripts();}
+  };
+  adminScripts.appendChild(add);
+}
+
+function renderMaintenance(){
+  adminMaintenance.innerHTML="<div class='card'><h3>Modo Manutenção</h3></div>";
 
   scripts.forEach(s=>{
     const chk=document.createElement('input');
@@ -206,35 +288,22 @@ function renderAdmin(){
     chk.onchange=()=>{
       if(maintenanceScripts.includes(s.title)){
         maintenanceScripts=maintenanceScripts.filter(x=>x!==s.title);
-      }else{
-        maintenanceScripts.push(s.title);
-      }
+      }else maintenanceScripts.push(s.title);
+      save();
     };
 
-    maint.appendChild(chk);
-    maint.appendChild(document.createTextNode(' '+s.title));
-    maint.appendChild(document.createElement('br'));
+    adminMaintenance.appendChild(chk);
+    adminMaintenance.appendChild(document.createTextNode(' '+s.title));
+    adminMaintenance.appendChild(document.createElement('br'));
   });
-
-  div.appendChild(maint);
-
-  const add=document.createElement('div');
-  add.className='card';
-  add.innerHTML='<h3>Adicionar Script</h3>';
-
-  const btn=document.createElement('button');
-  btn.innerText='Adicionar Script';
-  btn.onclick=()=>{
-    const t=prompt('Nome do Script:');
-    const c=prompt('Código do Script:');
-    if(t&&c){scripts.push({title:t,code:c});renderScripts();}
-  };
-
-  add.appendChild(btn);
-  div.appendChild(add);
 }
+
+const loginDiv=document.getElementById('login');
+const painel=document.getElementById('painel');
+const navNormal=document.getElementById('navNormal');
+const navAdmin=document.getElementById('navAdmin');
+const scriptsDiv=document.getElementById('scripts');
 </script>
 
 </body>
 </html>
-
