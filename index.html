@@ -1,308 +1,287 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Nikolas Scripts</title>
-
 <style>
 body{
-  margin:0;
-  font-family:Arial, sans-serif;
-  background:linear-gradient(135deg,#000814,#0a0f2c,#1a0033);
-  color:white;
+    margin:0;
+    font-family:Arial;
+    background:#0a0f1f;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
 }
-
-.container{padding:30px;}
-
-.card{
-  background:rgba(0,0,0,0.85);
-  border:1px solid #7c3aed;
-  border-radius:18px;
-  padding:25px;
-  margin-bottom:20px;
-  animation:fadeIn 0.4s ease;
+.container{
+    background:#111a2e;
+    padding:40px;
+    border-radius:15px;
+    width:420px;
+    box-shadow:0 0 20px #6a00ff;
+    text-align:center;
 }
-
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(10px)}
-  to{opacity:1; transform:translateY(0)}
+input{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border-radius:8px;
+    border:none;
+    background:#1e2a4a;
+    color:white;
 }
-
-input,button{
-  padding:12px;
-  margin:8px 0;
-  border-radius:10px;
-  border:none;
-  font-size:15px;
-}
-
 button{
-  background:#7c3aed;
-  color:white;
-  cursor:pointer;
-  transition:0.2s;
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:none;
+    border-radius:8px;
+    background:linear-gradient(45deg,#6a00ff,#001aff);
+    color:white;
+    cursor:pointer;
+    transition:0.2s;
 }
-
 button:hover{
-  transform:scale(1.05);
-  box-shadow:0 0 15px #7c3aed;
+    transform:scale(1.05);
+    box-shadow:0 0 10px #6a00ff;
 }
-
-button:active{transform:scale(0.97)}
-
-.script-title{color:#a78bfa;font-size:18px;font-weight:bold}
-.maintenance{color:#ff4d4d;font-weight:bold}
-.hidden{display:none}
-
-.nav button{margin-right:10px}
+.hidden{display:none;}
+.scriptBox{
+    background:#1e2a4a;
+    padding:15px;
+    border-radius:10px;
+    margin:10px 0;
+}
+.maintenance{
+    opacity:0.5;
+}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
-<div id="login" class="container">
-  <div class="card" style="max-width:550px;margin:auto;">
-    <h2 style="text-align:center;color:#a78bfa;font-size:28px;">Nikolas Scripts</h2>
-    <input id="user" placeholder="Usuário">
-    <input id="pass" type="password" placeholder="Senha">
-    <button onclick="login()">Entrar / Solicitar Acesso</button>
-  </div>
+<div class="container" id="loginBox">
+    <h2>Nikolas Scripts</h2>
+    <input id="username" placeholder="Usuário">
+    <input id="password" type="password" placeholder="Senha">
+    <button onclick="login()">Entrar / Criar</button>
+    <p id="loginMsg"></p>
 </div>
 
-<!-- PAINEL -->
-<div id="painel" class="container hidden">
-  <h1 style="color:#a78bfa;">Nikolas Scripts</h1>
-
-  <div class="nav" id="navNormal">
-    <button onclick="showTab('home')">Início</button>
-    <button onclick="showTab('scripts')">Scripts</button>
-    <button onclick="showTab('tutorial')">Tutorial</button>
+<div class="container hidden" id="home">
+    <h2>Menu</h2>
+    <button onclick="openScripts()">Scripts</button>
+    <button onclick="openTutorial()">Tutorial</button>
+    <button id="adminPanelBtn" class="hidden" onclick="openAdmin()">Admin</button>
     <button onclick="logout()">Sair</button>
-  </div>
+</div>
 
-  <div class="nav hidden" id="navAdmin">
-    <button onclick="showTab('adminUsers')">Usuários</button>
-    <button onclick="showTab('adminScripts')">Gerenciar Scripts</button>
-    <button onclick="showTab('adminMaintenance')">Manutenção</button>
-    <button onclick="logout()">Sair</button>
-  </div>
+<div class="container hidden" id="scriptsPage">
+    <h2>Scripts</h2>
+    <div id="scriptsList"></div>
+    <button onclick="backHome()">Voltar</button>
+</div>
 
-  <div id="home" class="card">Bem-vindo ao painel.</div>
-  <div id="scripts" class="hidden"></div>
-  <div id="tutorial" class="hidden"></div>
+<div class="container hidden" id="tutorialPage">
+    <h2>Como usar Bookmarklet</h2>
+    <p><b>Computador:</b></p>
+    <p>1. Copie o script.</p>
+    <p>2. Pressione CTRL + SHIFT + B.</p>
+    <p>3. Clique com botão direito na barra de favoritos.</p>
+    <p>4. Clique em "Adicionar página".</p>
+    <p>5. Apague a URL e cole o script.</p>
+    <p>6. Salve e clique nele para executar.</p>
+    <br>
+    <p><b>Celular:</b></p>
+    <p>1. Copie o script.</p>
+    <p>2. Crie um favorito qualquer.</p>
+    <p>3. Edite o favorito.</p>
+    <p>4. Apague a URL.</p>
+    <p>5. Cole o script.</p>
+    <p>6. Salve e execute.</p>
+    <button onclick="backHome()">Voltar</button>
+</div>
 
-  <div id="adminUsers" class="hidden"></div>
-  <div id="adminScripts" class="hidden"></div>
-  <div id="adminMaintenance" class="hidden"></div>
+<div class="container hidden" id="adminPage">
+    <h2>Painel Admin</h2>
+
+    <h3>Logins Pendentes</h3>
+    <div id="pendingList"></div>
+
+    <h3>Usuários Aprovados</h3>
+    <div id="approvedList"></div>
+
+    <h3>Scripts</h3>
+    <input id="newScriptName" placeholder="Nome do Script">
+    <input id="newScriptCode" placeholder="Código do Script">
+    <button onclick="addScript()">Adicionar Script</button>
+
+    <h3>Modo Manutenção</h3>
+    <div id="maintenanceList"></div>
+
+    <button onclick="backHome()">Voltar</button>
 </div>
 
 <script>
-const ADMIN_USER="NikolasP";
-const ADMIN_PASS="05082011";
+let adminUser="NikolasP";
+let adminPass="05082011";
 
-let users=JSON.parse(localStorage.getItem('users')||'[]');
-let pending=JSON.parse(localStorage.getItem('pending')||'[]');
-let maintenanceScripts=JSON.parse(localStorage.getItem('maintenance')||'[]');
-let scripts=JSON.parse(localStorage.getItem('scripts')||JSON.stringify([
-  {title:"Auto Farm",code:"javascript:(function(){alert('Auto Farm Ativado');})();"},
-  {title:"Speed Boost",code:"javascript:(function(){alert('Speed Boost Ativado');})();"}
-]));
-
-let currentUser=null;
+let users=JSON.parse(localStorage.getItem("users"))||{};
+let pendingUsers=JSON.parse(localStorage.getItem("pendingUsers"))||{};
+let scripts=JSON.parse(localStorage.getItem("scripts"))||{
+    "Script Teste":"javascript:alert('Funcionando!')"
+};
+let maintenance=JSON.parse(localStorage.getItem("maintenance"))||{};
 
 function save(){
-  localStorage.setItem('users',JSON.stringify(users));
-  localStorage.setItem('pending',JSON.stringify(pending));
-  localStorage.setItem('maintenance',JSON.stringify(maintenanceScripts));
-  localStorage.setItem('scripts',JSON.stringify(scripts));
+    localStorage.setItem("users",JSON.stringify(users));
+    localStorage.setItem("pendingUsers",JSON.stringify(pendingUsers));
+    localStorage.setItem("scripts",JSON.stringify(scripts));
+    localStorage.setItem("maintenance",JSON.stringify(maintenance));
 }
 
 function login(){
-  const u=user.value;
-  const p=pass.value;
+    let u=username.value;
+    let p=password.value;
 
-  if(u===ADMIN_USER && p===ADMIN_PASS){
-    currentUser={username:u,admin:true};
-    enter();return;
-  }
-
-  const found=users.find(x=>x.username===u && x.password===p);
-  if(found){
-    currentUser={username:u,admin:false};enter();
-  }else{
-    if(!pending.find(x=>x.username===u)){
-      pending.push({username:u,password:p});
-      save();
-      alert("Solicitação enviada.");
-    }else alert("Já está pendente.");
-  }
-}
-
-function enter(){
-  loginDiv.classList.add('hidden');
-  painel.classList.remove('hidden');
-
-  if(currentUser.admin){
-    navNormal.classList.add('hidden');
-    navAdmin.classList.remove('hidden');
-    showTab('adminUsers');
-  }else{
-    navAdmin.classList.add('hidden');
-    navNormal.classList.remove('hidden');
-    showTab('home');
-  }
-}
-
-function logout(){location.reload();}
-
-function hideAll(){
-  document.querySelectorAll('#painel > div').forEach(d=>{
-    if(!d.classList.contains('nav')) d.classList.add('hidden');
-  });
-}
-
-function showTab(id){
-  hideAll();
-  document.getElementById(id).classList.remove('hidden');
-  if(id==='scripts') renderScripts();
-  if(id==='tutorial') renderTutorial();
-  if(id==='adminUsers') renderAdminUsers();
-  if(id==='adminScripts') renderAdminScripts();
-  if(id==='adminMaintenance') renderMaintenance();
-}
-
-function renderScripts(){
-  scriptsDiv.innerHTML='';
-  scripts.forEach(s=>{
-    const card=document.createElement('div');
-    card.className='card';
-    card.innerHTML=`<div class='script-title'>${s.title}</div><pre>${s.code}</pre>`;
-
-    if(maintenanceScripts.includes(s.title)){
-      card.innerHTML+="<div class='maintenance'>⚠ Em manutenção</div>";
-    }else{
-      const btn=document.createElement('button');
-      btn.innerText='Copiar Script';
-      btn.onclick=()=>navigator.clipboard.writeText(s.code);
-      card.appendChild(btn);
+    if(u===adminUser && p===adminPass){
+        showHome(true);
+        return;
     }
 
-    scriptsDiv.appendChild(card);
-  });
+    if(users[u] && users[u]===p){
+        showHome(false);
+    }else if(pendingUsers[u]){
+        loginMsg.innerText="Aguardando aprovação.";
+    }else{
+        pendingUsers[u]=p;
+        save();
+        loginMsg.innerText="Solicitação enviada!";
+    }
 }
 
-function renderTutorial(){
-  tutorial.innerHTML=`<div class='card'>
-  <h3 style='color:#60a5fa'>Tutorial Completo</h3>
-  <p><b>Computador:</b></p>
-  <ol>
-  <li>Copie o script.</li>
-  <li>Pressione CTRL + SHIFT + B.</li>
-  <li>Crie novo favorito.</li>
-  <li>Cole o código na URL.</li>
-  <li>Clique no favorito para executar.</li>
-  </ol>
-  <p><b>Celular:</b></p>
-  <ol>
-  <li>Copie o script.</li>
-  <li>Crie um favorito.</li>
-  <li>Edite e cole o código na URL.</li>
-  <li>Toque no favorito para executar.</li>
-  </ol>
-  </div>`;
+function showHome(isAdmin){
+    loginBox.classList.add("hidden");
+    home.classList.remove("hidden");
+    if(isAdmin){
+        adminPanelBtn.classList.remove("hidden");
+        loadAdmin();
+    }
 }
 
-function renderAdminUsers(){
-  adminUsers.innerHTML="<div class='card'><h3>Solicitações</h3></div>";
-
-  pending.forEach(u=>{
-    const c=document.createElement('div');
-    c.className='card';
-    c.innerHTML=`${u.username}<br>`;
-
-    const a=document.createElement('button');
-    a.innerText='Aceitar';
-    a.onclick=()=>{users.push(u);pending=pending.filter(x=>x.username!==u.username);save();renderAdminUsers();};
-
-    const r=document.createElement('button');
-    r.innerText='Recusar';
-    r.style.background='red';
-    r.onclick=()=>{pending=pending.filter(x=>x.username!==u.username);save();renderAdminUsers();};
-
-    c.appendChild(a);c.appendChild(r);
-    adminUsers.appendChild(c);
-  });
-
-  adminUsers.innerHTML+="<div class='card'><h3>Usuários Ativos</h3></div>";
-
-  users.forEach(u=>{
-    const c=document.createElement('div');
-    c.className='card';
-    c.innerHTML=`${u.username}<br>`;
-
-    const revoke=document.createElement('button');
-    revoke.innerText='Remover Licença';
-    revoke.style.background='orange';
-    revoke.onclick=()=>{users=users.filter(x=>x.username!==u.username);save();renderAdminUsers();};
-
-    c.appendChild(revoke);
-    adminUsers.appendChild(c);
-  });
+function logout(){
+    location.reload();
 }
 
-function renderAdminScripts(){
-  adminScripts.innerHTML="<div class='card'><h3>Gerenciar Scripts</h3></div>";
-
-  scripts.forEach(s=>{
-    const c=document.createElement('div');
-    c.className='card';
-    c.innerHTML=s.title;
-
-    const del=document.createElement('button');
-    del.innerText='Excluir';
-    del.style.background='red';
-    del.onclick=()=>{scripts=scripts.filter(x=>x.title!==s.title);maintenanceScripts=maintenanceScripts.filter(x=>x!==s.title);save();renderAdminScripts();};
-
-    c.appendChild(del);
-    adminScripts.appendChild(c);
-  });
-
-  const add=document.createElement('button');
-  add.innerText='Adicionar Script';
-  add.onclick=()=>{
-    const t=prompt('Nome do Script:');
-    const c=prompt('Código:');
-    if(t&&c){scripts.push({title:t,code:c});save();renderAdminScripts();}
-  };
-  adminScripts.appendChild(add);
+function openScripts(){
+    home.classList.add("hidden");
+    scriptsPage.classList.remove("hidden");
+    loadScripts();
 }
 
-function renderMaintenance(){
-  adminMaintenance.innerHTML="<div class='card'><h3>Modo Manutenção</h3></div>";
-
-  scripts.forEach(s=>{
-    const chk=document.createElement('input');
-    chk.type='checkbox';
-    chk.checked=maintenanceScripts.includes(s.title);
-    chk.onchange=()=>{
-      if(maintenanceScripts.includes(s.title)){
-        maintenanceScripts=maintenanceScripts.filter(x=>x!==s.title);
-      }else maintenanceScripts.push(s.title);
-      save();
-    };
-
-    adminMaintenance.appendChild(chk);
-    adminMaintenance.appendChild(document.createTextNode(' '+s.title));
-    adminMaintenance.appendChild(document.createElement('br'));
-  });
+function openTutorial(){
+    home.classList.add("hidden");
+    tutorialPage.classList.remove("hidden");
 }
 
-const loginDiv=document.getElementById('login');
-const painel=document.getElementById('painel');
-const navNormal=document.getElementById('navNormal');
-const navAdmin=document.getElementById('navAdmin');
-const scriptsDiv=document.getElementById('scripts');
+function openAdmin(){
+    home.classList.add("hidden");
+    adminPage.classList.remove("hidden");
+    loadAdmin();
+}
+
+function backHome(){
+    scriptsPage.classList.add("hidden");
+    tutorialPage.classList.add("hidden");
+    adminPage.classList.add("hidden");
+    home.classList.remove("hidden");
+}
+
+function loadScripts(){
+    scriptsList.innerHTML="";
+    for(let name in scripts){
+        let div=document.createElement("div");
+        div.className="scriptBox";
+        if(maintenance[name]) div.classList.add("maintenance");
+        div.innerHTML="<b>"+name+"</b><br>";
+        if(!maintenance[name]){
+            div.innerHTML+="<button onclick=\"copyScript('"+name+"')\">Copiar</button>";
+        }else{
+            div.innerHTML+="<p>⚠ Em manutenção</p>";
+        }
+        scriptsList.appendChild(div);
+    }
+}
+
+function copyScript(name){
+    navigator.clipboard.writeText(scripts[name]);
+    alert("Script copiado!");
+}
+
+function loadAdmin(){
+    pendingList.innerHTML="";
+    approvedList.innerHTML="";
+    maintenanceList.innerHTML="";
+
+    for(let u in pendingUsers){
+        let div=document.createElement("div");
+        div.innerHTML=u+
+        "<button onclick=\"approveUser('"+u+"')\">Aceitar</button>"+
+        "<button onclick=\"rejectUser('"+u+"')\">Recusar</button>";
+        pendingList.appendChild(div);
+    }
+
+    for(let u in users){
+        let div=document.createElement("div");
+        div.innerHTML=u+
+        "<button onclick=\"removeUser('"+u+"')\">Remover Licença</button>";
+        approvedList.appendChild(div);
+    }
+
+    for(let name in scripts){
+        let div=document.createElement("div");
+        div.innerHTML=name+
+        "<button onclick=\"toggleMaintenance('"+name+"')\">"+
+        (maintenance[name]?"Desativar":"Ativar")+
+        "</button>";
+        maintenanceList.appendChild(div);
+    }
+}
+
+function approveUser(u){
+    users[u]=pendingUsers[u];
+    delete pendingUsers[u];
+    save();
+    loadAdmin();
+}
+
+function rejectUser(u){
+    delete pendingUsers[u];
+    save();
+    loadAdmin();
+}
+
+function removeUser(u){
+    delete users[u];
+    save();
+    loadAdmin();
+}
+
+function addScript(){
+    let n=newScriptName.value;
+    let c=newScriptCode.value;
+    if(n && c){
+        scripts[n]=c;
+        save();
+        loadAdmin();
+    }
+}
+
+function toggleMaintenance(name){
+    maintenance[name]=!maintenance[name];
+    save();
+    loadAdmin();
+}
 </script>
 
 </body>
