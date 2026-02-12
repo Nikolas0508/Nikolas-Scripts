@@ -1,210 +1,295 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { motion } from "framer-motion";
-
-// ====== SIMULAÇÃO DE BANCO (localStorage) ======
-const getData = (key, fallback) => {
-  const data = localStorage.getItem(key);
-  return data ? JSON.parse(data) : fallback;
-};
-
-const setData = (key, value) => {
-  localStorage.setItem(key, JSON.stringify(value));
-};
-
-export default function NikolasScriptsApp() {
-  const [user, setUser] = useState(null);
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [view, setView] = useState("inicio");
-
-  const users = getData("users", []);
-  const scripts = getData("scripts", []);
-
-  const isAdmin = user?.role === "admin";
-
-  // Criar admin fixo
-  useEffect(() => {
-    if (!users.find(u => u.username === "NikolasP")) {
-      const adminUser = { username: "NikolasP", password: "2011", role: "admin" };
-      setData("users", [...users, adminUser]);
-    }
-  }, []);
-
-  const handleLogin = () => {
-    const existing = users.find(u => u.username === username && u.password === password);
-
-    if (existing) {
-      setUser(existing);
-    } else {
-      alert("Usuário ou senha incorretos");
-    }
-  };
-
-  if (!user) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-black via-green-950 to-black flex items-center justify-center text-green-400">
-        <Card className="p-8 w-96 bg-green-950/40 border border-green-500 shadow-[0_0_30px_#00ff88] rounded-2xl">
-          <CardContent className="space-y-4">
-            <h1 className="text-2xl font-bold text-green-300">Login</h1>
-            <Input className="bg-black border-green-500 text-green-300" placeholder="Usuário" value={username} onChange={e => setUsername(e.target.value)} />
-            <Input className="bg-black border-green-500 text-green-300" placeholder="Senha" type="password" value={password} onChange={e => setPassword(e.target.value)} />
-            <Button className="w-full bg-green-500 hover:bg-green-400 text-black font-bold" onClick={handleLogin}>Entrar</Button>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex min-h-screen bg-gradient-to-br from-black via-green-950 to-black text-green-300">
-      {/* Sidebar */}
-      <div className="w-64 bg-black/60 border-r border-green-500 p-4 space-y-4 shadow-[0_0_20px_#00ff88]">
-        <h2 className="text-xl font-bold text-green-400">Nikolas Scripts</h2>
-        <Button variant="ghost" className="w-full justify-start text-green-300 hover:bg-green-900" onClick={() => setView("inicio")}>Início</Button>
-        <Button variant="ghost" className="w-full justify-start text-green-300 hover:bg-green-900" onClick={() => setView("scripts")}>Scripts</Button>
-        <Button variant="ghost" className="w-full justify-start text-green-300 hover:bg-green-900" onClick={() => setView("tutorial")}>Tutorial</Button>
-        {isAdmin && (
-          <Button variant="ghost" className="w-full justify-start text-green-300 hover:bg-green-900" onClick={() => setView("admin")}>Admin</Button>
-        )}
-        <Button className="w-full bg-red-600 hover:bg-red-500 text-white" onClick={() => setUser(null)}>Sair</Button>
-      </div>
-
-      {/* Conteúdo */}
-      <div className="flex-1 p-8">
-        <motion.h1 initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-4xl font-bold mb-6 text-green-400 drop-shadow-[0_0_10px_#00ff88]">
-          {user.username}
-        </motion.h1>
-
-        {view === "inicio" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card className="bg-black/50 border border-green-500 shadow-[0_0_20px_#00ff88] rounded-2xl p-6">
-              <CardContent>
-                <h2 className="text-xl font-bold text-green-300">Scripts</h2>
-                <p>Acesse e copie scripts disponíveis</p>
-              </CardContent>
-            </Card>
-
-            {isAdmin && (
-              <Card className="bg-black/50 border border-green-500 shadow-[0_0_20px_#00ff88] rounded-2xl p-6">
-                <CardContent>
-                  <h2 className="text-xl font-bold text-green-300">Painel Admin</h2>
-                  <p>Gerencie acessos e scripts</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        )}
-
-        {view === "scripts" && (
-          <div className="space-y-4">
-            {scripts.map((s, i) => (
-              <Card key={i} className="bg-black/50 border border-green-500 rounded-2xl p-4">
-                <CardContent>
-                  <h2 className="font-bold text-green-400">{s.name}</h2>
-                  {s.maintenance ? (
-                    <p className="text-red-400">Em manutenção</p>
-                  ) : (
-                    <Textarea readOnly className="bg-black text-green-300 border-green-500" value={s.code} />
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
-
-        {view === "tutorial" && (
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold text-green-400">Como usar Bookmarklet</h2>
-            <p><strong>No Computador:</strong></p>
-            <ol className="list-decimal ml-6 space-y-1">
-              <li>Copie o script.</li>
-              <li>Crie um novo favorito no navegador.</li>
-              <li>No campo URL, cole o script.</li>
-              <li>Salve e clique quando quiser executar.</li>
-            </ol>
-            <p><strong>No Celular:</strong></p>
-            <ol className="list-decimal ml-6 space-y-1">
-              <li>Adicione qualquer página aos favoritos.</li>
-              <li>Edite o favorito.</li>
-              <li>Apague a URL e cole o script.</li>
-              <li>Salve e execute tocando no favorito.</li>
-            </ol>
-          </div>
-        )}
-
-        {view === "admin" && isAdmin && <AdminPanel />}
-      </div>
-    </div>
-  );
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Nikolas Scripts</title>
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#0f0f14;
+color:white;
+display:flex;
+height:100vh;
 }
 
-function AdminPanel() {
-  const [scripts, setScriptsState] = useState(getData("scripts", []));
-  const [users, setUsersState] = useState(getData("users", []));
-  const [name, setName] = useState("");
-  const [code, setCode] = useState("");
-
-  const addScript = () => {
-    const updated = [...scripts, { name, code, maintenance: false }];
-    setScriptsState(updated);
-    setData("scripts", updated);
-    setName("");
-    setCode("");
-  };
-
-  const toggleMaintenance = (index) => {
-    scripts[index].maintenance = !scripts[index].maintenance;
-    setScriptsState([...scripts]);
-    setData("scripts", scripts);
-  };
-
-  const deleteScript = (index) => {
-    const updated = scripts.filter((_, i) => i !== index);
-    setScriptsState(updated);
-    setData("scripts", updated);
-  };
-
-  const removeUser = (username) => {
-    const updated = users.filter(u => u.username !== username);
-    setUsersState(updated);
-    setData("users", updated);
-  };
-
-  return (
-    <div className="space-y-8">
-      <div>
-        <h2 className="text-xl font-bold text-green-400 mb-2">Adicionar Script</h2>
-        <Input className="bg-black border-green-500 text-green-300 mb-2" placeholder="Nome do Script" value={name} onChange={e => setName(e.target.value)} />
-        <Textarea className="bg-black border-green-500 text-green-300 mb-2" placeholder="Código" value={code} onChange={e => setCode(e.target.value)} />
-        <Button className="bg-green-500 hover:bg-green-400 text-black font-bold" onClick={addScript}>Adicionar</Button>
-      </div>
-
-      <div>
-        <h2 className="text-xl font-bold text-green-400">Gerenciar Scripts</h2>
-        {scripts.map((s, i) => (
-          <div key={i} className="flex gap-2 items-center">
-            <span>{s.name}</span>
-            <Button className="bg-yellow-500 text-black" onClick={() => toggleMaintenance(i)}>Manutenção</Button>
-            <Button className="bg-red-600 text-white" onClick={() => deleteScript(i)}>Excluir</Button>
-          </div>
-        ))}
-      </div>
-
-      <div>
-        <h2 className="text-xl font-bold text-green-400">Usuários</h2>
-        {users.map((u, i) => (
-          <div key={i} className="flex gap-2">
-            <span>{u.username} ({u.role})</span>
-            {u.role !== "admin" && (
-              <Button className="bg-red-600 text-white" onClick={() => removeUser(u.username)}>Remover</Button>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+.sidebar{
+width:230px;
+background:#151522;
+padding:20px;
+display:flex;
+flex-direction:column;
 }
+
+.sidebar h2{
+color:#a855f7;
+}
+
+.sidebar button{
+background:none;
+border:none;
+color:#aaa;
+text-align:left;
+padding:10px 0;
+cursor:pointer;
+font-size:15px;
+}
+
+.sidebar button:hover{
+color:white;
+}
+
+.main{
+flex:1;
+padding:40px;
+overflow:auto;
+}
+
+.card{
+background:#1a1a2e;
+padding:20px;
+border-radius:10px;
+margin-bottom:20px;
+}
+
+input, textarea{
+width:100%;
+padding:10px;
+margin:10px 0;
+background:#111;
+color:white;
+border:1px solid #333;
+border-radius:5px;
+}
+
+textarea{
+height:100px;
+}
+
+.action-btn{
+background:#7c3aed;
+border:none;
+padding:8px 15px;
+color:white;
+cursor:pointer;
+border-radius:5px;
+margin-right:5px;
+}
+
+.red{background:#dc2626;}
+.green{background:#16a34a;}
+.yellow{background:#eab308;}
+.hidden{display:none;}
+.center{
+display:flex;
+justify-content:center;
+align-items:center;
+width:100%;
+}
+.login-box{
+background:#1a1a2e;
+padding:30px;
+border-radius:10px;
+width:300px;
+}
+</style>
+</head>
+<body>
+
+<div id="loginPage" class="center">
+<div class="login-box">
+<h2>Login</h2>
+<input id="username" placeholder="Usuário">
+<input id="password" type="password" placeholder="Senha">
+<button class="action-btn" onclick="login()">Entrar</button>
+<p id="loginMsg"></p>
+</div>
+</div>
+
+<div id="app" class="hidden">
+<div class="sidebar">
+<h2>Nikolas Scripts</h2>
+<button onclick="showPage('home')">Início</button>
+<button onclick="showPage('scripts')">Scripts</button>
+<button onclick="showPage('tutorial')">Tutorial</button>
+<button id="adminBtn" onclick="showPage('admin')">Admin</button>
+<button onclick="logout()">Sair</button>
+</div>
+
+<div class="main">
+<h1>Bem Vindo aos Scripts do <span id="displayUser"></span></h1>
+<div id="content"></div>
+</div>
+</div>
+
+<script>
+let currentUser=null;
+
+let users=JSON.parse(localStorage.getItem("users"))||[];
+let scripts=JSON.parse(localStorage.getItem("scripts"))||[];
+
+if(!users.find(u=>u.username==="NikolasP")){
+users.push({username:"NikolasP",password:"2011",approved:true,isAdmin:true});
+localStorage.setItem("users",JSON.stringify(users));
+}
+
+function save(){
+localStorage.setItem("users",JSON.stringify(users));
+localStorage.setItem("scripts",JSON.stringify(scripts));
+}
+
+function login(){
+let u=username.value;
+let p=password.value;
+
+let user=users.find(x=>x.username===u);
+
+if(user){
+if(user.password!==p){loginMsg.innerText="Senha incorreta";return;}
+if(!user.approved && !user.isAdmin){loginMsg.innerText="Aguardando aprovação";return;}
+currentUser=user;
+start();
+}else{
+users.push({username:u,password:p,approved:false,isAdmin:false});
+save();
+loginMsg.innerText="Solicitação enviada!";
+}
+}
+
+function start(){
+loginPage.classList.add("hidden");
+app.classList.remove("hidden");
+displayUser.innerText=currentUser.username;
+adminBtn.style.display=currentUser.isAdmin?"block":"none";
+showPage("home");
+}
+
+function logout(){
+location.reload();
+}
+
+function showPage(page){
+content.innerHTML="";
+if(page==="home"){
+content.innerHTML=`<div class="card">
+<h2>Painel</h2>
+<p>Acesse seus scripts ou tutorial.</p>
+</div>`;
+}
+
+if(page==="scripts"){
+scripts.forEach((s,i)=>{
+content.innerHTML+=`
+<div class="card">
+<h3>${s.name}</h3>
+${s.maintenance? "<p style='color:orange'>Em manutenção</p>":
+`<textarea readonly>${s.content}</textarea>
+<button class="action-btn green" onclick="copyScript(${i})">Copiar</button>`}
+</div>`;
+});
+}
+
+if(page==="tutorial"){
+content.innerHTML=`
+<div class="card">
+<h2>💻 Computador</h2>
+<ol>
+<li>Crie um favorito</li>
+<li>Edite o favorito</li>
+<li>Cole o script no campo URL</li>
+<li>Salve e clique para executar</li>
+</ol>
+<h2>📱 Celular</h2>
+<ol>
+<li>Abra qualquer site</li>
+<li>Crie favorito</li>
+<li>Edite o favorito</li>
+<li>Substitua a URL pelo script</li>
+<li>Salve e clique</li>
+</ol>
+</div>`;
+}
+
+if(page==="admin" && currentUser.isAdmin){
+content.innerHTML=`
+<div class="card">
+<h2>Adicionar Script</h2>
+<input id="scriptName" placeholder="Nome do Script">
+<textarea id="scriptContent" placeholder="Código do Script"></textarea>
+<button class="action-btn green" onclick="addScript()">Adicionar</button>
+</div>
+
+<div class="card">
+<h2>Gerenciar Scripts</h2>
+${scripts.map((s,i)=>`
+<div>
+<b>${s.name}</b>
+<button class="action-btn yellow" onclick="toggleMan(${i})">Manutenção</button>
+<button class="action-btn red" onclick="delScript(${i})">Excluir</button>
+</div>
+`).join("")}
+</div>
+
+<div class="card">
+<h2>Solicitações</h2>
+${users.filter(u=>!u.approved&&!u.isAdmin).map((u,i)=>`
+<div>
+${u.username}
+<button class="action-btn green" onclick="approve('${u.username}')">Aprovar</button>
+<button class="action-btn red" onclick="removeUser('${u.username}')">Recusar</button>
+</div>
+`).join("")}
+</div>
+
+<div class="card">
+<h2>Usuários</h2>
+${users.filter(u=>u.approved&&!u.isAdmin).map(u=>`
+<div>
+${u.username}
+<button class="action-btn red" onclick="removeUser('${u.username}')">Remover</button>
+</div>
+`).join("")}
+</div>
+`;
+}
+}
+
+function copyScript(i){
+navigator.clipboard.writeText(scripts[i].content);
+alert("Copiado!");
+}
+
+function addScript(){
+scripts.push({name:scriptName.value,content:scriptContent.value,maintenance:false});
+save();
+showPage("admin");
+}
+
+function delScript(i){
+scripts.splice(i,1);
+save();
+showPage("admin");
+}
+
+function toggleMan(i){
+scripts[i].maintenance=!scripts[i].maintenance;
+save();
+showPage("admin");
+}
+
+function approve(name){
+let u=users.find(x=>x.username===name);
+u.approved=true;
+save();
+showPage("admin");
+}
+
+function removeUser(name){
+users=users.filter(x=>x.username!==name);
+save();
+showPage("admin");
+}
+</script>
+
+</body>
+</html>
