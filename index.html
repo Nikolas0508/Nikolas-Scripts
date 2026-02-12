@@ -1,1 +1,228 @@
+<script>
+let currentUser = null;
+
+let users = JSON.parse(localStorage.getItem("users")) || [];
+let scripts = JSON.parse(localStorage.getItem("scripts")) || [];
+
+// Criar admin fixo
+if (!users.find(u => u.username === "NikolasP")) {
+  users.push({
+    username: "NikolasP",
+    password: "2011",
+    approved: true,
+    isAdmin: true
+  });
+  localStorage.setItem("users", JSON.stringify(users));
+}
+
+function save() {
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("scripts", JSON.stringify(scripts));
+}
+
+function login() {
+  const usernameInput = document.getElementById("username").value.trim();
+  const passwordInput = document.getElementById("password").value.trim();
+  const msg = document.getElementById("loginMsg");
+
+  const user = users.find(u => u.username === usernameInput);
+
+  if (user) {
+    if (user.password !== passwordInput) {
+      msg.innerText = "Senha incorreta";
+      return;
+    }
+
+    if (!user.approved && !user.isAdmin) {
+      msg.innerText = "Aguardando aprovação do admin";
+      return;
+    }
+
+    currentUser = user;
+    startApp();
+  } else {
+    users.push({
+      username: usernameInput,
+      password: passwordInput,
+      approved: false,
+      isAdmin: false
+    });
+    save();
+    msg.innerText = "Solicitação enviada!";
+  }
+}
+
+function startApp() {
+  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+
+  document.getElementById("displayUser").innerText = currentUser.username;
+
+  if (!currentUser.isAdmin) {
+    document.getElementById("adminBtn").style.display = "none";
+  }
+
+  showPage("home");
+}
+
+function logout() {
+  location.reload();
+}
+
+function showPage(page) {
+  const content = document.getElementById("content");
+  content.innerHTML = "";
+
+  if (page === "home") {
+    content.innerHTML = `
+      <div class="card">
+        <h2>Painel</h2>
+        <p>Bem-vindo ao sistema.</p>
+      </div>
+    `;
+  }
+
+  if (page === "scripts") {
+    if (scripts.length === 0) {
+      content.innerHTML = `<div class="card">Nenhum script disponível.</div>`;
+      return;
+    }
+
+    scripts.forEach((s, i) => {
+      content.innerHTML += `
+        <div class="card">
+          <h3>${s.name}</h3>
+          ${
+            s.maintenance
+              ? "<p style='color:orange'>Em manutenção</p>"
+              : `<textarea readonly>${s.content}</textarea>
+                 <button class="action-btn green" onclick="copyScript(${i})">Copiar</button>`
+          }
+        </div>
+      `;
+    });
+  }
+
+  if (page === "tutorial") {
+    content.innerHTML = `
+      <div class="card">
+        <h2>💻 Computador</h2>
+        <ol>
+          <li>Crie um favorito no navegador</li>
+          <li>Edite o favorito</li>
+          <li>Cole o script na URL</li>
+          <li>Salve e clique para executar</li>
+        </ol>
+
+        <h2>📱 Celular</h2>
+        <ol>
+          <li>Abra qualquer site</li>
+          <li>Crie um favorito</li>
+          <li>Edite o favorito</li>
+          <li>Substitua a URL pelo script</li>
+          <li>Salve e execute</li>
+        </ol>
+      </div>
+    `;
+  }
+
+  if (page === "admin" && currentUser.isAdmin) {
+    content.innerHTML = `
+      <div class="card">
+        <h2>Adicionar Script</h2>
+        <input id="scriptName" placeholder="Nome do Script">
+        <textarea id="scriptContent" placeholder="Código do Script"></textarea>
+        <button class="action-btn green" onclick="addScript()">Adicionar</button>
+      </div>
+
+      <div class="card">
+        <h2>Gerenciar Scripts</h2>
+        ${scripts
+          .map(
+            (s, i) => `
+          <div>
+            <b>${s.name}</b>
+            <button class="action-btn yellow" onclick="toggleMan(${i})">Manutenção</button>
+            <button class="action-btn red" onclick="delScript(${i})">Excluir</button>
+          </div>
+        `
+          )
+          .join("")}
+      </div>
+
+      <div class="card">
+        <h2>Solicitações</h2>
+        ${users
+          .filter(u => !u.approved && !u.isAdmin)
+          .map(
+            u => `
+          <div>
+            ${u.username}
+            <button class="action-btn green" onclick="approve('${u.username}')">Aprovar</button>
+            <button class="action-btn red" onclick="removeUser('${u.username}')">Recusar</button>
+          </div>
+        `
+          )
+          .join("")}
+      </div>
+
+      <div class="card">
+        <h2>Usuários</h2>
+        ${users
+          .filter(u => u.approved && !u.isAdmin)
+          .map(
+            u => `
+          <div>
+            ${u.username}
+            <button class="action-btn red" onclick="removeUser('${u.username}')">Remover</button>
+          </div>
+        `
+          )
+          .join("")}
+      </div>
+    `;
+  }
+}
+
+function copyScript(i) {
+  navigator.clipboard.writeText(scripts[i].content);
+  alert("Copiado!");
+}
+
+function addScript() {
+  const name = document.getElementById("scriptName").value.trim();
+  const content = document.getElementById("scriptContent").value.trim();
+
+  if (!name || !content) return;
+
+  scripts.push({ name, content, maintenance: false });
+  save();
+  showPage("admin");
+}
+
+function delScript(i) {
+  scripts.splice(i, 1);
+  save();
+  showPage("admin");
+}
+
+function toggleMan(i) {
+  scripts[i].maintenance = !scripts[i].maintenance;
+  save();
+  showPage("admin");
+}
+
+function approve(name) {
+  const user = users.find(u => u.username === name);
+  if (user) user.approved = true;
+  save();
+  showPage("admin");
+}
+
+function removeUser(name) {
+  users = users.filter(u => u.username !== name);
+  save();
+  showPage("admin");
+}
+</script>
 
