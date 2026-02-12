@@ -1,1 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Nikolas Scripts</title>
+<style>
+body{background:#050b08;color:#00ff88;font-family:Arial}
+.hidden{display:none}
+.sidebar{width:200px;position:fixed;height:100vh;background:#07120d;padding:20px}
+.content{margin-left:220px;padding:20px}
+button{background:#00ff88;border:none;padding:8px;margin:5px 0;cursor:pointer}
+input,textarea{width:100%;margin:5px 0;padding:8px;background:#0a1712;border:1px solid #00ff88;color:white}
+</style>
+</head>
+<body>
+
+<div id="login">
+<h2>Login</h2>
+<input id="username" placeholder="Usuário">
+<input id="password" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+<p id="msg"></p>
+</div>
+
+<div id="app" class="hidden">
+<div class="sidebar">
+<a onclick="show('scripts')">Scripts</a>
+<a id="adminBtn" class="hidden" onclick="show('admin')">Admin</a>
+<button onclick="logout()">Sair</button>
+</div>
+
+<div class="content">
+
+<div id="scripts">
+<h2>Scripts</h2>
+<div id="scriptList"></div>
+<div id="addScriptBox" class="hidden">
+<input id="scriptName" placeholder="Nome">
+<textarea id="scriptContent"></textarea>
+<button onclick="addScript()">Adicionar</button>
+</div>
+</div>
+
+<div id="admin" class="hidden">
+<h2>Usuários</h2>
+<div id="users"></div>
+<h3>Adicionar Usuário</h3>
+<input id="newUser" placeholder="Usuário">
+<input id="newPass" placeholder="Senha">
+<button onclick="addUser()">Criar</button>
+</div>
+
+</div>
+</div>
+
+<script>
+
+let role=null;
+
+async function login(){
+let res=await fetch("/login",{method:"POST",headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username:username.value,password:password.value})});
+let data=await res.json();
+if(!data.success){msg.innerText="Login inválido";return}
+
+role=data.role;
+login.style.display="none";
+app.classList.remove("hidden");
+
+if(role==="admin"){
+adminBtn.classList.remove("hidden");
+addScriptBox.classList.remove("hidden");
+loadUsers();
+}
+
+loadScripts();
+}
+
+async function loadScripts(){
+let res=await fetch("/scripts");
+let scripts=await res.json();
+scriptList.innerHTML="";
+scripts.forEach(s=>{
+scriptList.innerHTML+=`
+<div>
+<b>${s.name}</b>
+<button onclick="copy('${s.content}')">Copiar</button>
+${role==="admin"?`<button onclick="deleteScript(${s.id})">Excluir</button>`:''}
+</div><br>`;
+});
+}
+
+function copy(text){
+navigator.clipboard.writeText(text);
+alert("Copiado!");
+}
+
+async function addScript(){
+await fetch("/add-script",{method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({name:scriptName.value,content:scriptContent.value})});
+loadScripts();
+}
+
+async function deleteScript(id){
+await fetch("/delete-script/"+id,{method:"DELETE"});
+loadScripts();
+}
+
+async function loadUsers(){
+let res=await fetch("/users");
+let users=await res.json();
+usersDiv.innerHTML="";
+users.forEach(u=>{
+users.innerHTML+=`
+<div>
+${u.username}
+<button onclick="deleteUser(${u.id})">Remover</button>
+</div><br>`;
+});
+}
+
+async function addUser(){
+await fetch("/add-user",{method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({username:newUser.value,password:newPass.value})});
+loadUsers();
+}
+
+async function deleteUser(id){
+await fetch("/delete-user/"+id,{method:"DELETE"});
+loadUsers();
+}
+
+function logout(){
+fetch("/logout").then(()=>location.reload());
+}
+
+function show(id){
+document.getElementById("scripts").classList.add("hidden");
+document.getElementById("admin").classList.add("hidden");
+document.getElementById(id).classList.remove("hidden");
+}
+
+</script>
+</body>
+</html>
 
