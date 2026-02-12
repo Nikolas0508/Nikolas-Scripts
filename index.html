@@ -298,6 +298,32 @@ loadAdmin();
 }
 
 </script>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc }
+  from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyA8c2VvzuUE8QTebpf4PnEtlGQDoB0SEmo",
+    authDomain: "nikolas-scripts-7d75e.firebaseapp.com",
+    projectId: "nikolas-scripts-7d75e",
+    storageBucket: "nikolas-scripts-7d75e.firebasestorage.app",
+    messagingSenderId: "423099962252",
+    appId: "1:423099962252:web:58931280e2ef3bedb8bca9"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  window.db = db;
+  window.collection = collection;
+  window.addDoc = addDoc;
+  window.getDocs = getDocs;
+  window.deleteDoc = deleteDoc;
+  window.doc = doc;
+</script>
+    
 </body>
 </html>
 
