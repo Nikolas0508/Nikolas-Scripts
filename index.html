@@ -90,6 +90,7 @@ background:rgba(13,31,23,0.6);
 backdrop-filter:blur(15px);
 padding:25px;border-radius:20px;margin-bottom:25px;
 transition:.3s;
+position:relative;
 }
 .card:hover{
 transform:translateY(-5px);
@@ -99,24 +100,32 @@ animation:rgbBorder 2s infinite alternate;
 .badge{color:#00ff88;font-weight:600;}
 .hidden{display:none;}
 
-/* Balões iniciais */
-.baloes-container{
-position:relative;width:100%;height:200px;margin-bottom:30px;
+/* Cards flutuantes tela inicial */
+.cards-flutuantes{
+display:flex;
+flex-wrap:wrap;
+gap:20px;
+margin-bottom:30px;
 }
-.balao{
-position:absolute;
-padding:10px 15px;
-background:rgba(0,255,136,0.2);
-border:1px solid #00ff88;
-border-radius:15px;
-color:#00ff88;
-font-weight:600;
-animation:float 5s ease-in-out infinite alternate;
+.cards-flutuantes .card{
+flex:1 1 calc(33% - 20px);
+min-width:220px;
+animation:float 6s ease-in-out infinite alternate;
 }
 @keyframes float{
 0%{transform:translateY(0px);}
-50%{transform:translateY(-20px);}
+50%{transform:translateY(-15px);}
 100%{transform:translateY(0px);}
+}
+
+/* Tutorial cards grandes */
+.tutorial-card{
+background:rgba(13,31,23,0.6);
+backdrop-filter:blur(15px);
+padding:25px;
+border-radius:20px;
+margin-bottom:25px;
+animation:rgbBorder 2s infinite alternate;
 }
 </style>
 </head>
@@ -146,17 +155,17 @@ animation:float 5s ease-in-out infinite alternate;
 
 <div class="content">
 
+<!-- INÍCIO -->
 <div id="inicio">
 <div class="title">Bem-vindo, <span class="badge" id="userDisplay"></span></div>
 
-<!-- Balões animados -->
-<div class="baloes-container">
-<div class="balao" style="top:10px;left:10%;">💻 Sistema profissional de scripts</div>
-<div class="balao" style="top:30px;left:35%;">📜 Copie scripts facilmente</div>
-<div class="balao" style="top:20px;left:60%;">🔒 Somente admin pode gerenciar usuários e scripts</div>
-<div class="balao" style="top:50px;left:80%;">🌐 Scripts e usuários online para todos</div>
-<div class="balao" style="top:40px;left:20%;">⚡ Funcionalidades rápidas e intuitivas</div>
-<div class="balao" style="top:60px;left:50%;">📘 Tutoriais passo a passo</div>
+<div class="cards-flutuantes">
+<div class="card">💻 Sistema profissional de scripts</div>
+<div class="card">📜 Copie scripts facilmente</div>
+<div class="card">🔒 Somente admin pode gerenciar usuários e scripts</div>
+<div class="card">🌐 Scripts e usuários online para todos</div>
+<div class="card">⚡ Funcionalidades rápidas e intuitivas</div>
+<div class="card">📘 Tutoriais passo a passo</div>
 </div>
 
 <div class="card">
@@ -164,7 +173,7 @@ Sistema profissional de gerenciamento de scripts com controle total do administr
 </div>
 </div>
 
-<!-- Scripts -->
+<!-- SCRIPTS -->
 <div id="scripts" class="hidden">
 <div class="title">Scripts Disponíveis</div>
 <div id="scriptList"></div>
@@ -179,31 +188,31 @@ Sistema profissional de gerenciamento de scripts com controle total do administr
 </div>
 </div>
 
-<!-- Tutorial -->
+<!-- TUTORIAL -->
 <div id="tutorial" class="hidden">
 <div class="title">Tutorial Detalhado</div>
 
-<div class="card">
-<h3>PC - Passo 1</h3>💻 Crie um favorito no navegador → nomeie
-</div>
-<div class="card">
-<h3>PC - Passo 2</h3>📝 Edite o favorito → cole <b>javascript:</b> + script
-</div>
-<div class="card">
-<h3>PC - Passo 3</h3>💾 Salve e clique no favorito em qualquer página para executar
-</div>
-<div class="card">
-<h3>Celular - Passo 1</h3>📱 Abra o navegador → adicione aos favoritos
-</div>
-<div class="card">
-<h3>Celular - Passo 2</h3>📝 Edite o favorito → cole o script completo
-</div>
-<div class="card">
-<h3>Celular - Passo 3</h3>💾 Salve e clique no favorito para executar
-</div>
+<div class="tutorial-card">
+<h3>💻 Tutorial PC</h3>
+<p>1️⃣ Crie um favorito no navegador → nomeie como quiser</p>
+<p>2️⃣ Edite o favorito e cole <b>javascript:</b> seguido do script</p>
+<p>3️⃣ Salve o favorito</p>
+<p>4️⃣ Abra qualquer site e clique no favorito → o script será executado</p>
+<p>5️⃣ Para adicionar novos scripts no painel → use a aba “Scripts” (somente admin)</p>
+<p>6️⃣ Para compartilhar scripts → copie e envie o conteúdo</p>
 </div>
 
-<!-- Admin -->
+<div class="tutorial-card">
+<h3>📱 Tutorial Celular</h3>
+<p>1️⃣ Abra o navegador → adicione aos favoritos</p>
+<p>2️⃣ Edite o favorito e cole o script completo</p>
+<p>3️⃣ Salve o favorito</p>
+<p>4️⃣ Clique no favorito para executar o script em qualquer página</p>
+<p>5️⃣ Para adicionar novos scripts no painel → use a aba “Scripts” (somente admin)</p>
+<p>6️⃣ Para compartilhar scripts → copie e envie o conteúdo</p>
+</div>
+
+<!-- ADMIN -->
 <div id="admin" class="hidden">
 <div class="title">Painel Administrativo</div>
 
