@@ -1,3 +1,31 @@
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  getDocs, 
+  deleteDoc,
+  doc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* COLE SUAS CREDENCIAIS AQUI */
+const firebaseConfig = {
+  apiKey: "AIzaSyA8c2VvzuUE8QTebpf4PnEtlGQDoB0SEmo",
+  authDomain: "nikolas-scripts-7d75e.firebaseapp.com",
+  projectId: "nikolas-scripts-7d75e",
+  storageBucket: "nikolas-scripts-7d75e.firebasestorage.app",
+  messagingSenderId: "423099962252",
+  appId: "1:423099962252:web:58931280e2ef3bedb8bca9"
+};
+
+const appFirebase = initializeApp(firebaseConfig);
+window.db = getFirestore(appFirebase);
+
+</script>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -180,34 +208,6 @@ Sistema profissional de gerenciamento de scripts com controle total do administr
 
 let currentUser=null;
 let isAdmin=false;
-
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  getDocs, 
-  deleteDoc,
-  doc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-/* COLE SUAS CREDENCIAIS AQUI */
-const firebaseConfig = {
-  apiKey: "AIzaSyA8c2VvzuUE8QTebpf4PnEtlGQDoB0SEmo",
-  authDomain: "nikolas-scripts-7d75e.firebaseapp.com",
-  projectId: "nikolas-scripts-7d75e",
-  storageBucket: "nikolas-scripts-7d75e.firebasestorage.app",
-  messagingSenderId: "423099962252",
-  appId: "1:423099962252:web:58931280e2ef3bedb8bca9"
-};
-
-const appFirebase = initializeApp(firebaseConfig);
-window.db = getFirestore(appFirebase);
-
-</script>
 
 function login(){
 let u=username.value,p=password.value;
