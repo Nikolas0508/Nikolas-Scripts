@@ -224,11 +224,18 @@ function start(u){
   app.style.display="block";
   userDisplay.innerText=currentUser;
 
-  if(isAdmin){
+  // 🔒 Apenas NikolasP vê admin
+  if(currentUser === "NikolasP"){
+    isAdmin=true;
     adminBtn.classList.remove("hidden");
     addScriptBox.classList.remove("hidden");
     loadUsers();
+  } else {
+    isAdmin=false;
+    adminBtn.classList.add("hidden");
+    addScriptBox.classList.add("hidden");
   }
+
   loadScripts();
 }
 
@@ -269,6 +276,7 @@ window.copyScript=async function(id){
 };
 
 window.addScript=async function(){
+  if(!isAdmin){alert("Somente admin pode adicionar scripts"); return;}
   const name=scriptName.value;
   const content=scriptContent.value;
   await addDoc(collection(db,"scripts"),{name,content});
@@ -276,6 +284,7 @@ window.addScript=async function(){
 };
 
 window.deleteScript=async function(id){
+  if(!isAdmin){alert("Somente admin pode excluir scripts"); return;}
   await deleteDoc(doc(db,"scripts",id));
   loadScripts();
 };
@@ -296,6 +305,7 @@ async function loadUsers(){
 }
 
 window.addUser=async function(){
+  if(!isAdmin){alert("Somente admin pode criar usuários"); return;}
   const u=newUser.value;
   const p=newPass.value;
   if(!u||!p){alert("Preencha tudo"); return;}
@@ -306,6 +316,7 @@ window.addUser=async function(){
 };
 
 window.deleteUser=async function(id){
+  if(!isAdmin){alert("Somente admin pode remover usuários"); return;}
   await deleteDoc(doc(db,"users",id));
   loadUsers();
 };
