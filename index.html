@@ -1,31 +1,3 @@
-<script type="module">
-
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { 
-  getFirestore, 
-  collection, 
-  addDoc, 
-  getDocs, 
-  deleteDoc,
-  doc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-/* COLE SUAS CREDENCIAIS AQUI */
-const firebaseConfig = {
-  apiKey: "AIzaSyA8c2VvzuUE8QTebpf4PnEtlGQDoB0SEmo",
-  authDomain: "nikolas-scripts-7d75e.firebaseapp.com",
-  projectId: "nikolas-scripts-7d75e",
-  storageBucket: "nikolas-scripts-7d75e.firebasestorage.app",
-  messagingSenderId: "423099962252",
-  appId: "1:423099962252:web:58931280e2ef3bedb8bca9"
-};
-
-const appFirebase = initializeApp(firebaseConfig);
-window.db = getFirestore(appFirebase);
-
-</script>
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -204,122 +176,140 @@ Sistema profissional de gerenciamento de scripts com controle total do administr
 </div>
 </div>
 
-<script>
+<!-- ================= FIREBASE SCRIPT ================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA8c2VvzuUE8QTebpf4PnEtlGQDoB0SEmo",
+  authDomain: "nikolas-scripts-7d75e.firebaseapp.com",
+  projectId: "nikolas-scripts-7d75e",
+  storageBucket: "nikolas-scripts-7d75e.firebasestorage.app",
+  messagingSenderId: "423099962252",
+  appId: "1:423099962252:web:58931280e2ef3bedb8bca9"
+};
+
+const appFirebase = initializeApp(firebaseConfig);
+const db = getFirestore(appFirebase);
 
 let currentUser=null;
 let isAdmin=false;
 
-function login(){
-let u=username.value,p=password.value;
+/* ===== LOGIN ===== */
+window.login = async function() {
+  const u = username.value;
+  const p = password.value;
 
-if(u==="NikolasP"&&p==="2011"){
-currentUser=u;isAdmin=true;start();return}
+  if(u === "NikolasP" && p === "2011"){
+    isAdmin=true;
+    start(u);
+    return;
+  }
 
-let users=getUsers();
-let user=users.find(x=>x.username===u&&x.password===p);
+  const usersSnap = await getDocs(collection(db,"users"));
+  let userExists=false;
+  usersSnap.forEach(docSnap=>{
+    const data=docSnap.data();
+    if(data.username===u && data.password===p) userExists=true;
+  });
 
-if(!user){msg.innerText="Usuário inválido";return}
+  if(!userExists){msg.innerText="Usuário inválido"; return;}
+  start(u);
+};
 
-currentUser=u;
-start();
+function start(u){
+  currentUser=u;
+  loginPage.style.display="none";
+  app.style.display="block";
+  userDisplay.innerText=currentUser;
+
+  if(isAdmin){
+    adminBtn.classList.remove("hidden");
+    addScriptBox.classList.remove("hidden");
+    loadUsers();
+  }
+  loadScripts();
 }
 
-function start(){
-loginPage.style.display="none";
-app.style.display="block";
-userDisplay.innerText=currentUser;
+window.show=function(id){
+  ["inicio","scripts","tutorial","admin"].forEach(x=>{
+    document.getElementById(x).classList.add("hidden");
+  });
+  document.getElementById(id).classList.remove("hidden");
+};
 
-if(isAdmin){
-adminBtn.classList.remove("hidden");
-addScriptBox.classList.remove("hidden");
-loadAdmin();
+/* ===== SCRIPTS ===== */
+async function loadScripts(){
+  const list = scriptList;
+  list.innerHTML="";
+
+  const scriptsSnap = await getDocs(collection(db,"scripts"));
+  scriptsSnap.forEach(docSnap=>{
+    const data=docSnap.data();
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`
+      <h3>${data.name}</h3>
+      <button onclick="copyScript('${docSnap.id}')">Copiar</button>
+      ${isAdmin?`<button onclick="deleteScript('${docSnap.id}')">Excluir</button>`:''}
+    `;
+    list.appendChild(div);
+  });
 }
 
-loadScripts();
-}
+window.copyScript=async function(id){
+  const snap = await getDocs(collection(db,"scripts"));
+  let text="";
+  snap.forEach(doc=>{
+    if(doc.id===id) text=doc.data().content;
+  });
+  navigator.clipboard.writeText(text);
+  alert("Copiado!");
+};
 
-function show(id){
-["inicio","scripts","tutorial","admin"].forEach(x=>{
-document.getElementById(x).classList.add("hidden")});
-document.getElementById(id).classList.remove("hidden");
-}
+window.addScript=async function(){
+  const name=scriptName.value;
+  const content=scriptContent.value;
+  await addDoc(collection(db,"scripts"),{name,content});
+  loadScripts();
+};
 
-function loadScripts(){
-let list=scriptList;
-list.innerHTML="";
-let scripts=getScripts();
-
-scripts.forEach((s,i)=>{
-let div=document.createElement("div");
-div.className="card";
-div.innerHTML=`
-<h3>${s.name}</h3>
-<button onclick="copyScript(${i})">Copiar</button>
-${isAdmin?`
-<button onclick="deleteScript(${i})">Excluir</button>`:''}
-`;
-list.appendChild(div);
-});
-}
-
-function copyScript(i){
-navigator.clipboard.writeText(getScripts()[i].content);
-alert("Copiado!");
-}
-
-function addScript(){
-let s=getScripts();
-s.push({name:scriptName.value,content:scriptContent.value});
-saveScripts(s);
-loadScripts();
-}
-
-function deleteScript(i){
-let s=getScripts();
-s.splice(i,1);
-saveScripts(s);
-loadScripts();
-}
+window.deleteScript=async function(id){
+  await deleteDoc(doc(db,"scripts",id));
+  loadScripts();
+};
 
 /* ===== ADMIN ===== */
-
-function loadAdmin(){
-let users=getUsers();
-usersContainer.innerHTML="";
-
-users.forEach((u,i)=>{
-let div=document.createElement("div");
-div.innerHTML=`
-<b>${u.username}</b>
-<button onclick="removeUser(${i})">Remover</button>
-<br><br>`;
-usersContainer.appendChild(div);
-});
+async function loadUsers(){
+  usersContainer.innerHTML="";
+  const usersSnap = await getDocs(collection(db,"users"));
+  usersSnap.forEach(docSnap=>{
+    const data=docSnap.data();
+    const div=document.createElement("div");
+    div.innerHTML=`
+      <b>${data.username}</b>
+      <button onclick="deleteUser('${docSnap.id}')">Remover</button><br><br>
+    `;
+    usersContainer.appendChild(div);
+  });
 }
 
-function addUser(){
-let u=newUser.value;
-let p=newPass.value;
+window.addUser=async function(){
+  const u=newUser.value;
+  const p=newPass.value;
+  if(!u||!p){alert("Preencha tudo"); return;}
+  await addDoc(collection(db,"users"),{username:u,password:p});
+  newUser.value="";
+  newPass.value="";
+  loadUsers();
+};
 
-if(!u||!p){alert("Preencha tudo");return}
-
-let users=getUsers();
-if(users.find(x=>x.username===u)){alert("Usuário já existe");return}
-
-users.push({username:u,password:p});
-saveUsers(users);
-newUser.value="";
-newPass.value="";
-loadAdmin();
-}
-
-function removeUser(i){
-let users=getUsers();
-users.splice(i,1);
-saveUsers(users);
-loadAdmin();
-}
-
+window.deleteUser=async function(id){
+  await deleteDoc(doc(db,"users",id));
+  loadUsers();
+};
 </script>
+
 </body>
 </html>
