@@ -1,1 +1,303 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nikolas Scripts | Control Panel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --bg:#050b08;
+    --card:#0d1f17;
+    --neon:#00ff88;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+
+body{background:var(--bg);color:white;}
+
+@keyframes rgbBorder{
+0%{box-shadow:0 0 10px #00ff88;}
+25%{box-shadow:0 0 15px #00ffcc;}
+50%{box-shadow:0 0 15px #00ffaa;}
+75%{box-shadow:0 0 15px #00ff66;}
+100%{box-shadow:0 0 10px #00ff88;}
+}
+
+/* LOGIN */
+.login{
+display:flex;height:100vh;justify-content:center;align-items:center;
+}
+.login-box{
+background:rgba(13,31,23,0.6);
+backdrop-filter:blur(20px);
+padding:40px;border-radius:20px;width:400px;
+animation:rgbBorder 3s infinite alternate;
+}
+.login-box h2{
+margin-bottom:20px;text-align:center;color:var(--neon);
+}
+input,textarea{
+width:100%;padding:12px;margin:10px 0;
+background:#0a1712;border:1px solid #00ff88;
+border-radius:8px;color:white;
+}
+button{
+width:100%;padding:12px;background:var(--neon);
+border:none;border-radius:8px;font-weight:600;
+cursor:pointer;transition:.3s;margin-top:5px;
+}
+button:hover{
+transform:scale(1.05);
+box-shadow:0 0 20px #00ff88;
+}
+
+/* APP */
+.app{display:none;}
+
+.sidebar{
+position:fixed;width:250px;height:100vh;
+background:#07120d;padding:30px;
+border-right:1px solid #00ff88;
+}
+.logo{
+font-size:22px;font-weight:800;color:var(--neon);
+margin-bottom:40px;
+}
+.sidebar a{
+display:block;margin:15px 0;padding:10px;
+border-radius:8px;cursor:pointer;transition:.3s;
+}
+.sidebar a:hover{
+background:#00ff8820;
+box-shadow:0 0 15px #00ff88;
+}
+
+.content{
+margin-left:270px;padding:50px;
+animation:fade 0.6s ease;
+}
+@keyframes fade{
+from{opacity:0;transform:translateY(10px);}
+to{opacity:1;transform:translateY(0);}
+}
+
+.title{font-size:32px;font-weight:800;margin-bottom:10px;}
+.card{
+background:rgba(13,31,23,0.6);
+backdrop-filter:blur(15px);
+padding:25px;border-radius:20px;margin-bottom:25px;
+transition:.3s;
+}
+.card:hover{
+transform:translateY(-5px);
+animation:rgbBorder 2s infinite alternate;
+}
+
+.badge{color:#00ff88;font-weight:600;}
+.hidden{display:none;}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login" id="loginPage">
+<div class="login-box">
+<h2>Nikolas Scripts</h2>
+<input id="username" placeholder="Usuário">
+<input id="password" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+<p id="msg"></p>
+</div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+
+<div class="sidebar">
+<div class="logo">Nikolas Scripts</div>
+<a onclick="show('inicio')">🏠 Início</a>
+<a onclick="show('scripts')">📜 Scripts</a>
+<a onclick="show('tutorial')">📘 Tutorial</a>
+<a id="adminBtn" class="hidden" onclick="show('admin')">🛠 Admin</a>
+</div>
+
+<div class="content">
+
+<div id="inicio">
+<div class="title">Bem-vindo, <span class="badge" id="userDisplay"></span></div>
+<div class="card">
+Sistema profissional de gerenciamento de scripts com controle total do administrador.
+</div>
+</div>
+
+<div id="scripts" class="hidden">
+<div class="title">Scripts Disponíveis</div>
+<div id="scriptList"></div>
+
+<div id="addScriptBox" class="hidden">
+<div class="card">
+<h3>Adicionar Script</h3>
+<input id="scriptName" placeholder="Nome do Script">
+<textarea id="scriptContent" placeholder="Código do Script"></textarea>
+<button onclick="addScript()">Salvar Script</button>
+</div>
+</div>
+</div>
+
+<div id="tutorial" class="hidden">
+<div class="title">Tutorial Bookmarklet</div>
+<div class="card">
+💻 Crie um favorito → Edite → Cole começando com <b>javascript:</b>
+</div>
+<div class="card">
+📱 Crie favorito → Edite → Cole script → Salve → Execute
+</div>
+</div>
+
+<div id="admin" class="hidden">
+<div class="title">Painel Administrativo</div>
+
+<div class="card">
+<h3>Usuários Cadastrados</h3>
+<div id="usersContainer"></div>
+</div>
+
+<div class="card">
+<h3>Adicionar Novo Usuário</h3>
+<input id="newUser" placeholder="Novo usuário">
+<input id="newPass" placeholder="Senha" type="password">
+<button onclick="addUser()">Criar Usuário</button>
+</div>
+</div>
+
+</div>
+</div>
+
+<script>
+
+let currentUser=null;
+let isAdmin=false;
+
+function getUsers(){return JSON.parse(localStorage.getItem("users"))||[]}
+function saveUsers(u){localStorage.setItem("users",JSON.stringify(u))}
+function getScripts(){return JSON.parse(localStorage.getItem("scripts"))||[]}
+function saveScripts(s){localStorage.setItem("scripts",JSON.stringify(s))}
+
+function login(){
+let u=username.value,p=password.value;
+
+if(u==="NikolasP"&&p==="2011"){
+currentUser=u;isAdmin=true;start();return}
+
+let users=getUsers();
+let user=users.find(x=>x.username===u&&x.password===p);
+
+if(!user){msg.innerText="Usuário inválido";return}
+
+currentUser=u;
+start();
+}
+
+function start(){
+loginPage.style.display="none";
+app.style.display="block";
+userDisplay.innerText=currentUser;
+
+if(isAdmin){
+adminBtn.classList.remove("hidden");
+addScriptBox.classList.remove("hidden");
+loadAdmin();
+}
+
+loadScripts();
+}
+
+function show(id){
+["inicio","scripts","tutorial","admin"].forEach(x=>{
+document.getElementById(x).classList.add("hidden")});
+document.getElementById(id).classList.remove("hidden");
+}
+
+function loadScripts(){
+let list=scriptList;
+list.innerHTML="";
+let scripts=getScripts();
+
+scripts.forEach((s,i)=>{
+let div=document.createElement("div");
+div.className="card";
+div.innerHTML=`
+<h3>${s.name}</h3>
+<button onclick="copyScript(${i})">Copiar</button>
+${isAdmin?`
+<button onclick="deleteScript(${i})">Excluir</button>`:''}
+`;
+list.appendChild(div);
+});
+}
+
+function copyScript(i){
+navigator.clipboard.writeText(getScripts()[i].content);
+alert("Copiado!");
+}
+
+function addScript(){
+let s=getScripts();
+s.push({name:scriptName.value,content:scriptContent.value});
+saveScripts(s);
+loadScripts();
+}
+
+function deleteScript(i){
+let s=getScripts();
+s.splice(i,1);
+saveScripts(s);
+loadScripts();
+}
+
+/* ===== ADMIN ===== */
+
+function loadAdmin(){
+let users=getUsers();
+usersContainer.innerHTML="";
+
+users.forEach((u,i)=>{
+let div=document.createElement("div");
+div.innerHTML=`
+<b>${u.username}</b>
+<button onclick="removeUser(${i})">Remover</button>
+<br><br>`;
+usersContainer.appendChild(div);
+});
+}
+
+function addUser(){
+let u=newUser.value;
+let p=newPass.value;
+
+if(!u||!p){alert("Preencha tudo");return}
+
+let users=getUsers();
+if(users.find(x=>x.username===u)){alert("Usuário já existe");return}
+
+users.push({username:u,password:p});
+saveUsers(users);
+newUser.value="";
+newPass.value="";
+loadAdmin();
+}
+
+function removeUser(i){
+let users=getUsers();
+users.splice(i,1);
+saveUsers(users);
+loadAdmin();
+}
+
+</script>
+</body>
+</html>
 
