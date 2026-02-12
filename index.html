@@ -223,8 +223,7 @@ window.login = async function() {
   const p = password.value;
 
   if(u === "NikolasP" && p === "2011"){
-    isAdmin=true;
-    start(u);
+    start(u, true); // admin
     return;
   }
 
@@ -236,22 +235,22 @@ window.login = async function() {
   });
 
   if(!userExists){msg.innerText="Usuário inválido"; return;}
-  start(u);
+  start(u, false);
 };
 
-function start(u){
+function start(u, admin=false){
   currentUser=u;
+  isAdmin=admin;
+
   loginPage.style.display="none";
   app.style.display="block";
   userDisplay.innerText=currentUser;
 
-  if(currentUser === "NikolasP"){
-    isAdmin=true;
+  if(isAdmin){
     adminBtn.classList.remove("hidden");
     addScriptBox.classList.remove("hidden");
-    loadUsers();
+    loadUsers(); // carrega os usuários do Firebase
   } else {
-    isAdmin=false;
     adminBtn.classList.add("hidden");
     addScriptBox.classList.add("hidden");
   }
@@ -270,7 +269,6 @@ window.show=function(id){
 async function loadScripts(){
   const list = scriptList;
   list.innerHTML="";
-
   const scriptsSnap = await getDocs(collection(db,"scripts"));
   scriptsSnap.forEach(docSnap=>{
     const data=docSnap.data();
@@ -316,7 +314,7 @@ async function loadUsers(){
   usersSnap.forEach(docSnap=>{
     const data=docSnap.data();
     const div=document.createElement("div");
-    div.className="card"; // Garante fundo correto
+    div.className="card";
     div.innerHTML=`
       <b>${data.username}</b>
       <button onclick="deleteUser('${docSnap.id}')">Remover</button><br><br>
