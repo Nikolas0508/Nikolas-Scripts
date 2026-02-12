@@ -186,21 +186,44 @@ function saveUsers(u){localStorage.setItem("users",JSON.stringify(u))}
 function getScripts(){return JSON.parse(localStorage.getItem("scripts"))||[]}
 function saveScripts(s){localStorage.setItem("scripts",JSON.stringify(s))}
 
-function login(){
-let u=username.value,p=password.value;
+async function login(){
+  let u = username.value;
+  let p = password.value;
 
-if(u==="NikolasP"&&p==="2011"){
-currentUser=u;isAdmin=true;start();return}
+  // Admin fixo continua funcionando
+  if(u === "NikolasP" && p === "2011"){
+    currentUser = u;
+    isAdmin = true;
+    start();
+    return;
+  }
 
-let users=getUsers();
-let user=users.find(x=>x.username===u&&x.password===p);
+  try {
+    const querySnapshot = await getDocs(collection(db, "users"));
 
-if(!user){msg.innerText="Usuário inválido";return}
+    let found = false;
 
-currentUser=u;
-start();
+    querySnapshot.forEach((docSnap) => {
+      const data = docSnap.data();
+      if(data.username === u && data.password === p){
+        found = true;
+      }
+    });
+
+    if(!found){
+      msg.innerText = "Usuário inválido";
+      return;
+    }
+
+    currentUser = u;
+    start();
+
+  } catch (error) {
+    console.error(error);
+    msg.innerText = "Erro ao conectar com o servidor";
+  }
 }
-
+    
 function start(){
 loginPage.style.display="none";
 app.style.display="block";
