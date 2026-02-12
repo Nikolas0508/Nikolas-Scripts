@@ -15,30 +15,16 @@
 }
 
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
-
 body{background:var(--bg);color:white;}
 
-@keyframes rgbBorder{
-0%{box-shadow:0 0 10px #00ff88;}
-25%{box-shadow:0 0 15px #00ffcc;}
-50%{box-shadow:0 0 15px #00ffaa;}
-75%{box-shadow:0 0 15px #00ff66;}
-100%{box-shadow:0 0 10px #00ff88;}
-}
-
-/* LOGIN */
-.login{
-display:flex;height:100vh;justify-content:center;align-items:center;
-}
+.login{display:flex;height:100vh;justify-content:center;align-items:center;}
 .login-box{
 background:rgba(13,31,23,0.6);
 backdrop-filter:blur(20px);
 padding:40px;border-radius:20px;width:400px;
-animation:rgbBorder 3s infinite alternate;
+box-shadow:0 0 20px #00ff88;
 }
-.login-box h2{
-margin-bottom:20px;text-align:center;color:var(--neon);
-}
+.login-box h2{margin-bottom:20px;text-align:center;color:var(--neon);}
 input,textarea{
 width:100%;padding:12px;margin:10px 0;
 background:#0a1712;border:1px solid #00ff88;
@@ -47,14 +33,10 @@ border-radius:8px;color:white;
 button{
 width:100%;padding:12px;background:var(--neon);
 border:none;border-radius:8px;font-weight:600;
-cursor:pointer;transition:.3s;margin-top:5px;
+cursor:pointer;margin-top:5px;
 }
-button:hover{
-transform:scale(1.05);
-box-shadow:0 0 20px #00ff88;
-}
+button:hover{transform:scale(1.05);}
 
-/* APP */
 .app{display:none;}
 
 .sidebar{
@@ -68,41 +50,22 @@ margin-bottom:40px;
 }
 .sidebar a{
 display:block;margin:15px 0;padding:10px;
-border-radius:8px;cursor:pointer;transition:.3s;
+border-radius:8px;cursor:pointer;
 }
-.sidebar a:hover{
-background:#00ff8820;
-box-shadow:0 0 15px #00ff88;
-}
+.sidebar a:hover{background:#00ff8820;}
 
-.content{
-margin-left:270px;padding:50px;
-animation:fade 0.6s ease;
-}
-@keyframes fade{
-from{opacity:0;transform:translateY(10px);}
-to{opacity:1;transform:translateY(0);}
-}
-
+.content{margin-left:270px;padding:50px;}
 .title{font-size:32px;font-weight:800;margin-bottom:10px;}
 .card{
 background:rgba(13,31,23,0.6);
-backdrop-filter:blur(15px);
 padding:25px;border-radius:20px;margin-bottom:25px;
-transition:.3s;
 }
-.card:hover{
-transform:translateY(-5px);
-animation:rgbBorder 2s infinite alternate;
-}
-
 .badge{color:#00ff88;font-weight:600;}
 .hidden{display:none;}
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div class="login" id="loginPage">
 <div class="login-box">
 <h2>Nikolas Scripts</h2>
@@ -113,15 +76,13 @@ animation:rgbBorder 2s infinite alternate;
 </div>
 </div>
 
-<!-- APP -->
 <div class="app" id="app">
 
 <div class="sidebar">
 <div class="logo">Nikolas Scripts</div>
 <a onclick="show('inicio')">🏠 Início</a>
 <a onclick="show('scripts')">📜 Scripts</a>
-<a onclick="show('tutorial')">📘 Tutorial</a>
-<a id="adminBtn" class="hidden" onclick="show('admin')">🛠 Admin</a>
+<a onclick="show('admin')" id="adminBtn" class="hidden">🛠 Admin</a>
 </div>
 
 <div class="content">
@@ -147,84 +108,79 @@ Sistema profissional de gerenciamento de scripts com controle total do administr
 </div>
 </div>
 
-<div id="tutorial" class="hidden">
-<div class="title">Tutorial Bookmarklet</div>
-<div class="card">
-💻 Crie um favorito → Edite → Cole começando com <b>javascript:</b>
-</div>
-<div class="card">
-📱 Crie favorito → Edite → Cole script → Salve → Execute
-</div>
-</div>
-
 <div id="admin" class="hidden">
 <div class="title">Painel Administrativo</div>
 
 <div class="card">
-<h3>Usuários Cadastrados</h3>
+<h3>Usuários</h3>
 <div id="usersContainer"></div>
 </div>
 
 <div class="card">
-<h3>Adicionar Novo Usuário</h3>
-<input id="newUser" placeholder="Novo usuário">
+<h3>Novo Usuário</h3>
+<input id="newUser" placeholder="Usuário">
 <input id="newPass" placeholder="Senha" type="password">
-<button onclick="addUser()">Criar Usuário</button>
+<button onclick="addUser()">Criar</button>
 </div>
 </div>
 
 </div>
 </div>
 
-<script>
+<!-- FIREBASE -->
+<script type="module">
 
-let currentUser=null;
-let isAdmin=false;
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
 
-function getUsers(){return JSON.parse(localStorage.getItem("users"))||[]}
-function saveUsers(u){localStorage.setItem("users",JSON.stringify(u))}
-function getScripts(){return JSON.parse(localStorage.getItem("scripts"))||[]}
-function saveScripts(s){localStorage.setItem("scripts",JSON.stringify(s))}
+const firebaseConfig = {
+  apiKey: "AIzaSyA8c2VvzuUE8QTebpf4PnEtlGQDoB0SEmo",
+  authDomain: "nikolas-scripts-7d75e.firebaseapp.com",
+  projectId: "nikolas-scripts-7d75e",
+  storageBucket: "nikolas-scripts-7d75e.firebasestorage.app",
+  messagingSenderId: "423099962252",
+  appId: "1:423099962252:web:58931280e2ef3bedb8bca9"
+};
 
-async function login(){
-  let u = username.value;
-  let p = password.value;
+const appFirebase = initializeApp(firebaseConfig);
+const db = getFirestore(appFirebase);
 
-  // Admin fixo continua funcionando
-  if(u === "NikolasP" && p === "2011"){
-    currentUser = u;
-    isAdmin = true;
-    start();
-    return;
-  }
+window.db = db;
+window.collection = collection;
+window.addDoc = addDoc;
+window.getDocs = getDocs;
+window.deleteDoc = deleteDoc;
+window.doc = doc;
 
-  try {
-    const querySnapshot = await getDocs(collection(db, "users"));
+window.currentUser = null;
+window.isAdmin = false;
 
-    let found = false;
+window.login = async function(){
+let u = username.value;
+let p = password.value;
 
-    querySnapshot.forEach((docSnap) => {
-      const data = docSnap.data();
-      if(data.username === u && data.password === p){
-        found = true;
-      }
-    });
-
-    if(!found){
-      msg.innerText = "Usuário inválido";
-      return;
-    }
-
-    currentUser = u;
-    start();
-
-  } catch (error) {
-    console.error(error);
-    msg.innerText = "Erro ao conectar com o servidor";
-  }
+if(u==="NikolasP" && p==="2011"){
+currentUser=u;
+isAdmin=true;
+start();
+return;
 }
-    
-function start(){
+
+const querySnapshot = await getDocs(collection(db,"users"));
+let found=false;
+
+querySnapshot.forEach((d)=>{
+let data=d.data();
+if(data.username===u && data.password===p){found=true;}
+});
+
+if(!found){msg.innerText="Usuário inválido";return;}
+
+currentUser=u;
+start();
+}
+
+window.start=function(){
 loginPage.style.display="none";
 app.style.display="block";
 userDisplay.innerText=currentUser;
@@ -238,115 +194,72 @@ loadAdmin();
 loadScripts();
 }
 
-function show(id){
-["inicio","scripts","tutorial","admin"].forEach(x=>{
+window.show=function(id){
+["inicio","scripts","admin"].forEach(x=>{
 document.getElementById(x).classList.add("hidden")});
 document.getElementById(id).classList.remove("hidden");
 }
 
-function loadScripts(){
-let list=scriptList;
-list.innerHTML="";
-let scripts=getScripts();
+async function loadScripts(){
+scriptList.innerHTML="";
+const querySnapshot=await getDocs(collection(db,"scripts"));
 
-scripts.forEach((s,i)=>{
+querySnapshot.forEach((d)=>{
+let s=d.data();
 let div=document.createElement("div");
 div.className="card";
 div.innerHTML=`
 <h3>${s.name}</h3>
-<button onclick="copyScript(${i})">Copiar</button>
-${isAdmin?`
-<button onclick="deleteScript(${i})">Excluir</button>`:''}
+<button onclick="navigator.clipboard.writeText(\`${s.content}\`)">Copiar</button>
+${isAdmin?`<button onclick="deleteScript('${d.id}')">Excluir</button>`:''}
 `;
-list.appendChild(div);
+scriptList.appendChild(div);
 });
 }
 
-function copyScript(i){
-navigator.clipboard.writeText(getScripts()[i].content);
-alert("Copiado!");
-}
-
-function addScript(){
-let s=getScripts();
-s.push({name:scriptName.value,content:scriptContent.value});
-saveScripts(s);
+window.addScript=async function(){
+await addDoc(collection(db,"scripts"),{
+name:scriptName.value,
+content:scriptContent.value
+});
 loadScripts();
 }
 
-function deleteScript(i){
-let s=getScripts();
-s.splice(i,1);
-saveScripts(s);
+window.deleteScript=async function(id){
+await deleteDoc(doc(db,"scripts",id));
 loadScripts();
 }
 
-/* ===== ADMIN ===== */
-
-function loadAdmin(){
-let users=getUsers();
+async function loadAdmin(){
 usersContainer.innerHTML="";
+const querySnapshot=await getDocs(collection(db,"users"));
 
-users.forEach((u,i)=>{
+querySnapshot.forEach((d)=>{
+let u=d.data();
 let div=document.createElement("div");
 div.innerHTML=`
 <b>${u.username}</b>
-<button onclick="removeUser(${i})">Remover</button>
+<button onclick="removeUser('${d.id}')">Remover</button>
 <br><br>`;
 usersContainer.appendChild(div);
 });
 }
 
-function addUser(){
-let u=newUser.value;
-let p=newPass.value;
-
-if(!u||!p){alert("Preencha tudo");return}
-
-let users=getUsers();
-if(users.find(x=>x.username===u)){alert("Usuário já existe");return}
-
-users.push({username:u,password:p});
-saveUsers(users);
+window.addUser=async function(){
+await addDoc(collection(db,"users"),{
+username:newUser.value,
+password:newPass.value
+});
 newUser.value="";
 newPass.value="";
 loadAdmin();
 }
 
-function removeUser(i){
-let users=getUsers();
-users.splice(i,1);
-saveUsers(users);
+window.removeUser=async function(id){
+await deleteDoc(doc(db,"users",id));
 loadAdmin();
 }
 
 </script>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc }
-  from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey: "AIzaSyA8c2VvzuUE8QTebpf4PnEtlGQDoB0SEmo",
-    authDomain: "nikolas-scripts-7d75e.firebaseapp.com",
-    projectId: "nikolas-scripts-7d75e",
-    storageBucket: "nikolas-scripts-7d75e.firebasestorage.app",
-    messagingSenderId: "423099962252",
-    appId: "1:423099962252:web:58931280e2ef3bedb8bca9"
-  };
-
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
-
-  window.db = db;
-  window.collection = collection;
-  window.addDoc = addDoc;
-  window.getDocs = getDocs;
-  window.deleteDoc = deleteDoc;
-  window.doc = doc;
-</script>
-    
 </body>
 </html>
-
