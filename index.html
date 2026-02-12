@@ -1,1 +1,255 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nikolas Scripts | Control Panel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+<style>
+:root{
+    --bg:#050b08;
+    --card:#0d1f17;
+    --neon:#00ff88;
+}
+
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
+body{background:var(--bg);color:white;}
+
+.login{display:flex;height:100vh;justify-content:center;align-items:center;}
+.login-box{
+background:rgba(13,31,23,0.6);
+padding:40px;border-radius:20px;width:400px;
+box-shadow:0 0 20px #00ff88;
+}
+.login-box h2{margin-bottom:20px;text-align:center;color:var(--neon);}
+
+input,textarea{
+width:100%;padding:12px;margin:10px 0;
+background:#0a1712;border:1px solid #00ff88;
+border-radius:8px;color:white;
+}
+
+button{
+width:100%;padding:12px;background:var(--neon);
+border:none;border-radius:8px;font-weight:600;
+cursor:pointer;margin-top:5px;
+}
+
+.app{display:none;}
+.sidebar{
+position:fixed;width:250px;height:100vh;
+background:#07120d;padding:30px;
+border-right:1px solid #00ff88;
+}
+.logo{font-size:22px;font-weight:800;color:var(--neon);margin-bottom:40px;}
+.sidebar a{display:block;margin:15px 0;cursor:pointer;}
+
+.content{margin-left:270px;padding:50px;}
+.title{font-size:28px;font-weight:800;margin-bottom:20px;}
+.card{
+background:rgba(13,31,23,0.6);
+padding:20px;border-radius:15px;margin-bottom:20px;
+}
+
+.hidden{display:none;}
+</style>
+</head>
+<body>
+
+<div class="login" id="loginPage">
+<div class="login-box">
+<h2>Nikolas Scripts</h2>
+<input id="username" placeholder="Usuário">
+<input id="password" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+<p id="msg"></p>
+</div>
+</div>
+
+<div class="app" id="app">
+<div class="sidebar">
+<div class="logo">Nikolas Scripts</div>
+<a onclick="show('inicio')">🏠 Início</a>
+<a onclick="show('scripts')">📜 Scripts</a>
+<a id="adminBtn" class="hidden" onclick="show('admin')">🛠 Admin</a>
+</div>
+
+<div class="content">
+
+<div id="inicio">
+<div class="title">Bem-vindo, <span id="userDisplay"></span></div>
+</div>
+
+<div id="scripts" class="hidden">
+<div class="title">Scripts</div>
+<div id="scriptList"></div>
+
+<div id="addScriptBox" class="hidden">
+<div class="card">
+<input id="scriptName" placeholder="Nome do Script">
+<textarea id="scriptContent" placeholder="Código"></textarea>
+<button onclick="addScript()">Salvar Script</button>
+</div>
+</div>
+</div>
+
+<div id="admin" class="hidden">
+<div class="title">Usuários</div>
+<div id="usersContainer"></div>
+
+<div class="card">
+<input id="newUser" placeholder="Novo usuário">
+<input id="newPass" placeholder="Senha" type="password">
+<button onclick="addUser()">Criar</button>
+</div>
+</div>
+
+</div>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+/* ===== COLE SUAS CREDENCIAIS AQUI ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyA8c2VvzuUE8QTebpf4PnEtlGQDoB0SEmo",
+  authDomain: "nikolas-scripts-7d75e.firebaseapp.com",
+  projectId: "nikolas-scripts-7d75e",
+  storageBucket: "nikolas-scripts-7d75e.firebasestorage.app",
+  messagingSenderId: "423099962252",
+  appId: "1:423099962252:web:58931280e2ef3bedb8bca9"
+};
+/* ======================================= */
+
+const appFirebase = initializeApp(firebaseConfig);
+const db = getFirestore(appFirebase);
+
+let currentUser=null;
+let isAdmin=false;
+
+window.login = async function(){
+let u=username.value;
+let p=password.value;
+
+if(u==="NikolasP" && p==="2011"){
+isAdmin=true;
+start(u);
+return;
+}
+
+const querySnapshot = await getDocs(collection(db,"users"));
+let found=false;
+
+querySnapshot.forEach((docu)=>{
+if(docu.data().username===u && docu.data().password===p){
+found=true;
+}
+});
+
+if(!found){
+msg.innerText="Usuário inválido";
+return;
+}
+
+start(u);
+}
+
+function start(user){
+currentUser=user;
+loginPage.style.display="none";
+app.style.display="block";
+userDisplay.innerText=user;
+
+if(isAdmin){
+adminBtn.classList.remove("hidden");
+addScriptBox.classList.remove("hidden");
+loadUsers();
+}
+
+loadScripts();
+}
+
+window.show=function(id){
+["inicio","scripts","admin"].forEach(x=>{
+document.getElementById(x).classList.add("hidden")
+});
+document.getElementById(id).classList.remove("hidden");
+}
+
+async function loadScripts(){
+scriptList.innerHTML="";
+const querySnapshot=await getDocs(collection(db,"scripts"));
+
+querySnapshot.forEach((docu)=>{
+let data=docu.data();
+let div=document.createElement("div");
+div.className="card";
+div.innerHTML=`
+<b>${data.name}</b>
+<button onclick="copyText('${data.content.replace(/'/g,"\\'")}')">Copiar</button>
+${isAdmin?`<button onclick="deleteScript('${docu.id}')">Excluir</button>`:''}
+`;
+scriptList.appendChild(div);
+});
+}
+
+window.copyText=function(text){
+navigator.clipboard.writeText(text);
+alert("Copiado!");
+}
+
+window.addScript=async function(){
+await addDoc(collection(db,"scripts"),{
+name:scriptName.value,
+content:scriptContent.value
+});
+scriptName.value="";
+scriptContent.value="";
+loadScripts();
+}
+
+window.deleteScript=async function(id){
+await deleteDoc(doc(db,"scripts",id));
+loadScripts();
+}
+
+async function loadUsers(){
+usersContainer.innerHTML="";
+const querySnapshot=await getDocs(collection(db,"users"));
+
+querySnapshot.forEach((docu)=>{
+let data=docu.data();
+let div=document.createElement("div");
+div.className="card";
+div.innerHTML=`
+<b>${data.username}</b>
+<button onclick="deleteUser('${docu.id}')">Remover</button>
+`;
+usersContainer.appendChild(div);
+});
+}
+
+window.addUser=async function(){
+await addDoc(collection(db,"users"),{
+username:newUser.value,
+password:newPass.value
+});
+newUser.value="";
+newPass.value="";
+loadUsers();
+}
+
+window.deleteUser=async function(id){
+await deleteDoc(doc(db,"users",id));
+loadUsers();
+}
+
+</script>
+
+</body>
+</html>
 
