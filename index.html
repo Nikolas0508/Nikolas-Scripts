@@ -16,7 +16,7 @@
 
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 
-body{background:var(--bg);color:white;}
+body{background:var(--bg);color:white;overflow-x:hidden;}
 
 @keyframes rgbBorder{
 0%{box-shadow:0 0 10px #00ff88;}
@@ -98,6 +98,26 @@ animation:rgbBorder 2s infinite alternate;
 
 .badge{color:#00ff88;font-weight:600;}
 .hidden{display:none;}
+
+/* Balões iniciais */
+.baloes-container{
+position:relative;width:100%;height:200px;margin-bottom:30px;
+}
+.balao{
+position:absolute;
+padding:10px 15px;
+background:rgba(0,255,136,0.2);
+border:1px solid #00ff88;
+border-radius:15px;
+color:#00ff88;
+font-weight:600;
+animation:float 5s ease-in-out infinite alternate;
+}
+@keyframes float{
+0%{transform:translateY(0px);}
+50%{transform:translateY(-20px);}
+100%{transform:translateY(0px);}
+}
 </style>
 </head>
 <body>
@@ -128,11 +148,23 @@ animation:rgbBorder 2s infinite alternate;
 
 <div id="inicio">
 <div class="title">Bem-vindo, <span class="badge" id="userDisplay"></span></div>
+
+<!-- Balões animados -->
+<div class="baloes-container">
+<div class="balao" style="top:10px;left:10%;">💻 Sistema profissional de scripts</div>
+<div class="balao" style="top:30px;left:35%;">📜 Copie scripts facilmente</div>
+<div class="balao" style="top:20px;left:60%;">🔒 Somente admin pode gerenciar usuários e scripts</div>
+<div class="balao" style="top:50px;left:80%;">🌐 Scripts e usuários online para todos</div>
+<div class="balao" style="top:40px;left:20%;">⚡ Funcionalidades rápidas e intuitivas</div>
+<div class="balao" style="top:60px;left:50%;">📘 Tutoriais passo a passo</div>
+</div>
+
 <div class="card">
 Sistema profissional de gerenciamento de scripts com controle total do administrador.
 </div>
 </div>
 
+<!-- Scripts -->
 <div id="scripts" class="hidden">
 <div class="title">Scripts Disponíveis</div>
 <div id="scriptList"></div>
@@ -147,16 +179,31 @@ Sistema profissional de gerenciamento de scripts com controle total do administr
 </div>
 </div>
 
+<!-- Tutorial -->
 <div id="tutorial" class="hidden">
-<div class="title">Tutorial Bookmarklet</div>
+<div class="title">Tutorial Detalhado</div>
+
 <div class="card">
-💻 Crie um favorito → Edite → Cole começando com <b>javascript:</b>
+<h3>PC - Passo 1</h3>💻 Crie um favorito no navegador → nomeie
 </div>
 <div class="card">
-📱 Crie favorito → Edite → Cole script → Salve → Execute
+<h3>PC - Passo 2</h3>📝 Edite o favorito → cole <b>javascript:</b> + script
+</div>
+<div class="card">
+<h3>PC - Passo 3</h3>💾 Salve e clique no favorito em qualquer página para executar
+</div>
+<div class="card">
+<h3>Celular - Passo 1</h3>📱 Abra o navegador → adicione aos favoritos
+</div>
+<div class="card">
+<h3>Celular - Passo 2</h3>📝 Edite o favorito → cole o script completo
+</div>
+<div class="card">
+<h3>Celular - Passo 3</h3>💾 Salve e clique no favorito para executar
 </div>
 </div>
 
+<!-- Admin -->
 <div id="admin" class="hidden">
 <div class="title">Painel Administrativo</div>
 
@@ -224,7 +271,6 @@ function start(u){
   app.style.display="block";
   userDisplay.innerText=currentUser;
 
-  // 🔒 Apenas NikolasP vê admin
   if(currentUser === "NikolasP"){
     isAdmin=true;
     adminBtn.classList.remove("hidden");
