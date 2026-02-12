@@ -16,7 +16,7 @@
 
 *{margin:0;padding:0;box-sizing:border-box;font-family:'Poppins',sans-serif;}
 
-body{background:var(--bg);color:white;overflow-x:hidden;}
+body{background:var(--bg);color:white;}
 
 @keyframes rgbBorder{
 0%{box-shadow:0 0 10px #00ff88;}
@@ -126,19 +126,13 @@ animation:rgbBorder 2s infinite alternate;
 
 <div class="content">
 
-<!-- INÍCIO -->
 <div id="inicio">
 <div class="title">Bem-vindo, <span class="badge" id="userDisplay"></span></div>
-
-<div class="card">💻 Sistema profissional de scripts</div>
-<div class="card">📜 Copie scripts facilmente</div>
-<div class="card">🔒 Somente admin pode gerenciar usuários e scripts</div>
-<div class="card">🌐 Scripts e usuários online para todos</div>
-<div class="card">⚡ Funcionalidades rápidas e intuitivas</div>
-<div class="card">📘 Tutoriais passo a passo</div>
+<div class="card">
+Sistema profissional de gerenciamento de scripts com controle total do administrador.
+</div>
 </div>
 
-<!-- SCRIPTS -->
 <div id="scripts" class="hidden">
 <div class="title">Scripts Disponíveis</div>
 <div id="scriptList"></div>
@@ -153,31 +147,16 @@ animation:rgbBorder 2s infinite alternate;
 </div>
 </div>
 
-<!-- TUTORIAL -->
 <div id="tutorial" class="hidden">
-<div class="title">Tutorial Detalhado</div>
-
+<div class="title">Tutorial Bookmarklet</div>
 <div class="card">
-<h3>💻 Tutorial PC</h3>
-<p>1️⃣ Crie um favorito no navegador → nomeie como quiser</p>
-<p>2️⃣ Edite o favorito e cole <b>javascript:</b> seguido do script</p>
-<p>3️⃣ Salve o favorito</p>
-<p>4️⃣ Abra qualquer site e clique no favorito → o script será executado</p>
-<p>5️⃣ Para adicionar novos scripts no painel → use a aba “Scripts” (somente admin)</p>
-<p>6️⃣ Para compartilhar scripts → copie e envie o conteúdo</p>
+💻 Crie um favorito → Edite → Cole começando com <b>javascript:</b>
+</div>
+<div class="card">
+📱 Crie favorito → Edite → Cole script → Salve → Execute
+</div>
 </div>
 
-<div class="card">
-<h3>📱 Tutorial Celular</h3>
-<p>1️⃣ Abra o navegador → adicione aos favoritos</p>
-<p>2️⃣ Edite o favorito e cole o script completo</p>
-<p>3️⃣ Salve o favorito</p>
-<p>4️⃣ Clique no favorito para executar o script em qualquer página</p>
-<p>5️⃣ Para adicionar novos scripts no painel → use a aba “Scripts” (somente admin)</p>
-<p>6️⃣ Para compartilhar scripts → copie e envie o conteúdo</p>
-</div>
-
-<!-- ADMIN -->
 <div id="admin" class="hidden">
 <div class="title">Painel Administrativo</div>
 
@@ -203,62 +182,56 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/fireba
 import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "SUA_API_KEY",
-  authDomain: "SEU_AUTH_DOMAIN",
-  projectId: "SEU_PROJECT_ID",
-  storageBucket: "SEU_STORAGE_BUCKET",
-  messagingSenderId: "SEU_MESSAGING_ID",
-  appId: "SEU_APP_ID"
+  apiKey: "AIzaSyA8c2VvzuUE8QTebpf4PnEtlGQDoB0SEmo",
+  authDomain: "nikolas-scripts-7d75e.firebaseapp.com",
+  projectId: "nikolas-scripts-7d75e",
+  storageBucket: "nikolas-scripts-7d75e.firebasestorage.app",
+  messagingSenderId: "423099962252",
+  appId: "1:423099962252:web:58931280e2ef3bedb8bca9"
 };
 
 const appFirebase = initializeApp(firebaseConfig);
 const db = getFirestore(appFirebase);
 
-let currentUser = null;
-let isAdmin = false;
+let currentUser=null;
+let isAdmin=false;
 
-// REFERÊNCIAS DO DOM
-const loginPage = document.getElementById("loginPage");
-const app = document.getElementById("app");
-const userDisplay = document.getElementById("userDisplay");
-const adminBtn = document.getElementById("adminBtn");
-const addScriptBox = document.getElementById("addScriptBox");
-const usersContainer = document.getElementById("usersContainer");
-const scriptList = document.getElementById("scriptList");
-
-async function login() {
+/* ===== LOGIN ===== */
+window.login = async function() {
   const u = username.value;
   const p = password.value;
 
   if(u === "NikolasP" && p === "2011"){
-    start(u, true);
+    isAdmin=true;
+    start(u);
     return;
   }
 
   const usersSnap = await getDocs(collection(db,"users"));
-  let found = false;
-  usersSnap.forEach(docSnap => {
-    const data = docSnap.data();
-    if(data.username === u && data.password === p) found = true;
+  let userExists=false;
+  usersSnap.forEach(docSnap=>{
+    const data=docSnap.data();
+    if(data.username===u && data.password===p) userExists=true;
   });
 
-  if(!found){msg.innerText="Usuário inválido"; return;}
-  start(u, false);
-}
+  if(!userExists){msg.innerText="Usuário inválido"; return;}
+  start(u);
+};
 
-function start(u, admin=false){
-  currentUser = u;
-  isAdmin = admin;
+function start(u){
+  currentUser=u;
+  loginPage.style.display="none";
+  app.style.display="block";
+  userDisplay.innerText=currentUser;
 
-  loginPage.style.display = "none";
-  app.style.display = "block";
-  userDisplay.innerText = currentUser;
-
-  if(isAdmin){
+  // 🔒 Apenas NikolasP vê admin
+  if(currentUser === "NikolasP"){
+    isAdmin=true;
     adminBtn.classList.remove("hidden");
     addScriptBox.classList.remove("hidden");
     loadUsers();
   } else {
+    isAdmin=false;
     adminBtn.classList.add("hidden");
     addScriptBox.classList.add("hidden");
   }
@@ -267,88 +240,86 @@ function start(u, admin=false){
 }
 
 window.show=function(id){
-  ["inicio","scripts","tutorial","admin"].forEach(x => document.getElementById(x).classList.add("hidden"));
+  ["inicio","scripts","tutorial","admin"].forEach(x=>{
+    document.getElementById(x).classList.add("hidden");
+  });
   document.getElementById(id).classList.remove("hidden");
-
-  if(id==="admin" && isAdmin){
-    loadUsers();
-  }
-}
+};
 
 /* ===== SCRIPTS ===== */
 async function loadScripts(){
-  scriptList.innerHTML = "";
-  const snap = await getDocs(collection(db,"scripts"));
-  snap.forEach(docSnap=>{
-    const data = docSnap.data();
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
+  const list = scriptList;
+  list.innerHTML="";
+
+  const scriptsSnap = await getDocs(collection(db,"scripts"));
+  scriptsSnap.forEach(docSnap=>{
+    const data=docSnap.data();
+    const div=document.createElement("div");
+    div.className="card";
+    div.innerHTML=`
       <h3>${data.name}</h3>
       <button onclick="copyScript('${docSnap.id}')">Copiar</button>
-      ${isAdmin ? `<button onclick="deleteScript('${docSnap.id}')">Excluir</button>` : ''}
+      ${isAdmin?`<button onclick="deleteScript('${docSnap.id}')">Excluir</button>`:''}
     `;
-    scriptList.appendChild(div);
+    list.appendChild(div);
   });
 }
 
-window.copyScript = async function(id){
+window.copyScript=async function(id){
   const snap = await getDocs(collection(db,"scripts"));
   let text="";
   snap.forEach(doc=>{
-    if(doc.id===id) text = doc.data().content;
+    if(doc.id===id) text=doc.data().content;
   });
   navigator.clipboard.writeText(text);
   alert("Copiado!");
-}
+};
 
-window.addScript = async function(){
-  if(!isAdmin){alert("Somente admin"); return;}
-  const name = scriptName.value;
-  const content = scriptContent.value;
+window.addScript=async function(){
+  if(!isAdmin){alert("Somente admin pode adicionar scripts"); return;}
+  const name=scriptName.value;
+  const content=scriptContent.value;
   await addDoc(collection(db,"scripts"),{name,content});
   loadScripts();
-}
+};
 
-window.deleteScript = async function(id){
-  if(!isAdmin){alert("Somente admin"); return;}
+window.deleteScript=async function(id){
+  if(!isAdmin){alert("Somente admin pode excluir scripts"); return;}
   await deleteDoc(doc(db,"scripts",id));
   loadScripts();
-}
+};
 
 /* ===== ADMIN ===== */
 async function loadUsers(){
-  usersContainer.innerHTML = "";
-  const snap = await getDocs(collection(db,"users"));
-  snap.forEach(docSnap=>{
-    const data = docSnap.data();
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
+  usersContainer.innerHTML="";
+  const usersSnap = await getDocs(collection(db,"users"));
+  usersSnap.forEach(docSnap=>{
+    const data=docSnap.data();
+    const div=document.createElement("div");
+    div.innerHTML=`
       <b>${data.username}</b>
-      <button onclick="deleteUser('${docSnap.id}')">Remover</button>
-      <br><br>
+      <button onclick="deleteUser('${docSnap.id}')">Remover</button><br><br>
     `;
     usersContainer.appendChild(div);
   });
 }
 
-window.addUser = async function(){
-  if(!isAdmin){alert("Somente admin"); return;}
-  const u = newUser.value;
-  const p = newPass.value;
+window.addUser=async function(){
+  if(!isAdmin){alert("Somente admin pode criar usuários"); return;}
+  const u=newUser.value;
+  const p=newPass.value;
   if(!u||!p){alert("Preencha tudo"); return;}
   await addDoc(collection(db,"users"),{username:u,password:p});
-  newUser.value = "";
-  newPass.value = "";
+  newUser.value="";
+  newPass.value="";
   loadUsers();
-}
+};
 
-window.deleteUser = async function(id){
-  if(!isAdmin){alert("Somente admin"); return;}
+window.deleteUser=async function(id){
+  if(!isAdmin){alert("Somente admin pode remover usuários"); return;}
   await deleteDoc(doc(db,"users",id));
   loadUsers();
-}
+};
 </script>
 
 </body>
