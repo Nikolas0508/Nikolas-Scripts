@@ -126,13 +126,19 @@ animation:rgbBorder 2s infinite alternate;
 
 <div class="content">
 
+<!-- INÍCIO -->
 <div id="inicio">
 <div class="title">Bem-vindo, <span class="badge" id="userDisplay"></span></div>
-<div class="card">
-Sistema profissional de gerenciamento de scripts com controle total do administrador.
-</div>
+
+<div class="card">💻 Sistema profissional de scripts</div>
+<div class="card">📜 Copie scripts facilmente</div>
+<div class="card">🔒 Somente admin pode gerenciar usuários e scripts</div>
+<div class="card">🌐 Scripts e usuários online para todos</div>
+<div class="card">⚡ Funcionalidades rápidas e intuitivas</div>
+<div class="card">📘 Tutoriais passo a passo</div>
 </div>
 
+<!-- SCRIPTS -->
 <div id="scripts" class="hidden">
 <div class="title">Scripts Disponíveis</div>
 <div id="scriptList"></div>
@@ -147,16 +153,35 @@ Sistema profissional de gerenciamento de scripts com controle total do administr
 </div>
 </div>
 
+<!-- TUTORIAL -->
 <div id="tutorial" class="hidden">
-<div class="title">Tutorial Bookmarklet</div>
+<div class="title">Tutorial Completo</div>
+
 <div class="card">
-💻 Crie um favorito → Edite → Cole começando com <b>javascript:</b>
-</div>
-<div class="card">
-📱 Crie favorito → Edite → Cole script → Salve → Execute
-</div>
+<h3>💻 Tutorial PC</h3>
+<p>1️⃣ Abra seu navegador e crie um favorito</p>
+<p>2️⃣ Edite o favorito, cole <b>javascript:</b> seguido do script</p>
+<p>3️⃣ Salve o favorito</p>
+<p>4️⃣ Abra qualquer site e clique no favorito → script será executado</p>
+<p>5️⃣ Para adicionar novos scripts → use a aba “Scripts” (somente admin)</p>
+<p>6️⃣ Para compartilhar scripts → copie o conteúdo ou use o painel</p>
+<p>7️⃣ Mantenha seus scripts atualizados para todos os usuários</p>
+<p>8️⃣ Dicas de segurança: nunca compartilhe sua senha de admin</p>
 </div>
 
+<div class="card">
+<h3>📱 Tutorial Celular</h3>
+<p>1️⃣ Abra o navegador do celular e crie um favorito</p>
+<p>2️⃣ Edite o favorito e cole o script completo</p>
+<p>3️⃣ Salve o favorito</p>
+<p>4️⃣ Clique no favorito em qualquer página → script executado</p>
+<p>5️⃣ Para adicionar scripts → use o painel pelo PC (admin)</p>
+<p>6️⃣ Compartilhe scripts copiando o conteúdo ou enviando</p>
+<p>7️⃣ Dicas: teste scripts em sites seguros primeiro</p>
+<p>8️⃣ Recomenda-se usar navegador compatível com JavaScript</p>
+</div>
+
+<!-- ADMIN -->
 <div id="admin" class="hidden">
 <div class="title">Painel Administrativo</div>
 
@@ -244,6 +269,10 @@ window.show=function(id){
     document.getElementById(x).classList.add("hidden");
   });
   document.getElementById(id).classList.remove("hidden");
+
+  if(id==="admin" && isAdmin){
+    loadUsers();
+  }
 };
 
 /* ===== SCRIPTS ===== */
