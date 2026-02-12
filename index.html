@@ -1,1 +1,269 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Nikolas Scripts</title>
+
+<style>
+body{
+margin:0;
+font-family:Arial;
+background:#071a12;
+color:#d1ffe8;
+display:flex;
+height:100vh;
+}
+
+.hidden{display:none;}
+
+.center{
+display:flex;
+justify-content:center;
+align-items:center;
+width:100%;
+height:100vh;
+}
+
+.login-box{
+background:#0f2e22;
+padding:30px;
+border-radius:12px;
+width:300px;
+box-shadow:0 0 20px #00ff88;
+}
+
+input, textarea{
+width:100%;
+padding:10px;
+margin:10px 0;
+background:#061b13;
+color:white;
+border:1px solid #00ff88;
+border-radius:6px;
+}
+
+button{
+background:#00ff88;
+border:none;
+padding:8px 15px;
+color:#002b1b;
+cursor:pointer;
+border-radius:6px;
+margin-top:5px;
+}
+
+.sidebar{
+width:220px;
+background:#0d2b1f;
+padding:20px;
+display:flex;
+flex-direction:column;
+}
+
+.main{
+flex:1;
+padding:30px;
+overflow:auto;
+}
+
+.card{
+background:#0f2e22;
+padding:20px;
+margin-bottom:20px;
+border-radius:10px;
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage" class="center">
+<div class="login-box">
+<h2>Login</h2>
+<input id="username" placeholder="Usuário">
+<input id="password" type="password" placeholder="Senha">
+<button onclick="login()">Entrar</button>
+<p id="loginMsg"></p>
+</div>
+</div>
+
+<!-- APP -->
+<div id="app" class="hidden">
+<div class="sidebar">
+<h3>Nikolas Scripts</h3>
+<button onclick="showHome()">Início</button>
+<button onclick="showScripts()">Scripts</button>
+<button onclick="showTutorial()">Tutorial</button>
+<button id="adminBtn" onclick="showAdmin()">Admin</button>
+<button onclick="logout()">Sair</button>
+</div>
+
+<div class="main">
+<h1>Bem Vindo aos Scripts do <span id="displayUser"></span></h1>
+<div id="content"></div>
+</div>
+</div>
+
+<script>
+let users = JSON.parse(localStorage.getItem("users") || "[]");
+let scripts = JSON.parse(localStorage.getItem("scripts") || "[]");
+let currentUser = null;
+
+// Criar admin fixo
+if (!users.find(u => u.username === "NikolasP")) {
+  users.push({
+    username: "NikolasP",
+    password: "2011",
+    approved: true,
+    isAdmin: true
+  });
+  save();
+}
+
+function save(){
+  localStorage.setItem("users", JSON.stringify(users));
+  localStorage.setItem("scripts", JSON.stringify(scripts));
+}
+
+function login(){
+  const u = document.getElementById("username").value.trim();
+  const p = document.getElementById("password").value.trim();
+  const msg = document.getElementById("loginMsg");
+
+  if(!u || !p){
+    msg.innerText="Preencha tudo.";
+    return;
+  }
+
+  let user = users.find(x => x.username === u);
+
+  if(user){
+    if(user.password !== p){
+      msg.innerText="Senha incorreta";
+      return;
+    }
+
+    if(!user.approved && !user.isAdmin){
+      msg.innerText="Aguardando aprovação";
+      return;
+    }
+
+    currentUser = user;
+    startApp();
+  }else{
+    users.push({
+      username:u,
+      password:p,
+      approved:false,
+      isAdmin:false
+    });
+    save();
+    msg.innerText="Solicitação enviada!";
+  }
+}
+
+function startApp(){
+  document.getElementById("loginPage").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+
+  document.getElementById("displayUser").innerText=currentUser.username;
+
+  if(!currentUser.isAdmin){
+    document.getElementById("adminBtn").style.display="none";
+  }
+
+  showHome();
+}
+
+function logout(){
+  location.reload();
+}
+
+function showHome(){
+  document.getElementById("content").innerHTML=
+  `<div class="card">Sistema funcionando corretamente.</div>`;
+}
+
+function showScripts(){
+  let html="";
+  if(scripts.length===0){
+    html="<div class='card'>Nenhum script disponível.</div>";
+  }else{
+    scripts.forEach((s,i)=>{
+      html+=`
+      <div class="card">
+        <h3>${s.name}</h3>
+        ${s.maintenance ?
+        "<p style='color:orange'>Em manutenção</p>" :
+        `<textarea readonly>${s.content}</textarea>`}
+      </div>`;
+    });
+  }
+  document.getElementById("content").innerHTML=html;
+}
+
+function showTutorial(){
+  document.getElementById("content").innerHTML=
+  `<div class="card">
+  <h2>Computador</h2>
+  <ol>
+  <li>Crie favorito</li>
+  <li>Edite</li>
+  <li>Cole o script na URL</li>
+  <li>Salve e execute</li>
+  </ol>
+  <h2>Celular</h2>
+  <ol>
+  <li>Abra qualquer site</li>
+  <li>Crie favorito</li>
+  <li>Edite</li>
+  <li>Substitua URL pelo script</li>
+  </ol>
+  </div>`;
+}
+
+function showAdmin(){
+  if(!currentUser.isAdmin) return;
+
+  let pending = users.filter(u=>!u.approved && !u.isAdmin);
+  let approved = users.filter(u=>u.approved && !u.isAdmin);
+
+  let html=`
+  <div class="card">
+  <h2>Solicitações</h2>
+  ${pending.map(u=>`
+  <div>${u.username}
+  <button onclick="approve('${u.username}')">Aprovar</button>
+  <button onclick="removeUser('${u.username}')">Recusar</button>
+  </div>`).join("")}
+  </div>
+
+  <div class="card">
+  <h2>Usuários</h2>
+  ${approved.map(u=>`
+  <div>${u.username}
+  <button onclick="removeUser('${u.username}')">Remover</button>
+  </div>`).join("")}
+  </div>
+  `;
+
+  document.getElementById("content").innerHTML=html;
+}
+
+function approve(name){
+  let u=users.find(x=>x.username===name);
+  if(u) u.approved=true;
+  save();
+  showAdmin();
+}
+
+function removeUser(name){
+  users = users.filter(x=>x.username!==name);
+  save();
+  showAdmin();
+}
+</script>
+
+</body>
+</html>
 
